@@ -102,7 +102,7 @@
 	#include<linux/mm.h>
 
 	#ifdef USE_KERNEL_MEMORY_MANAGE
-		#include "kernel/phy_mem.h"
+		#include "phy_mem.h"
 	#endif
 
 	#ifdef USE_KERNEL_THREAD

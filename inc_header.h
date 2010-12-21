@@ -83,7 +83,7 @@
 #define USE_KERNEL_MEMORY_MANAGE
 #define CONFIG_KERNEL_ERR_INCLUDED
 
-#include "resource/include/Headerfile.h"
+#include "Headerfile.h"
 
 /*
  * driver specific header files
