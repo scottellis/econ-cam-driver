@@ -12,7 +12,6 @@ ifneq ($(KERNELRELEASE),)
 				omap_v4l2_fops_base.o \
 				isp.o \
 				omap_v4l2_ioctl_fops.o \
-				i2c.o \
 				exit_module.o \
 				error.o \
 				phy_mem.o
