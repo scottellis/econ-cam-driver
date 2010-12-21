@@ -34,9 +34,6 @@
 #define GET_MEM_NODE				0x01
 #define SET_MEM_NODE				0x02
 
-#define ENABLE					0x1
-#define DISABLE					0x0
-
 struct dma_memory
 {
 	struct dma_memory *next;
