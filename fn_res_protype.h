@@ -62,11 +62,11 @@ FNRESLT maintain_log(UPINT8 function_name,UINT32 lineno,UDPINT32 pointer,UINT32 
 /*
  * phy_mem.c
  */
-	FNRESLT list_all_phy_struct(INT0);
-	FNRESLT free_all_phy_struct(INT0);
-	FNRESLT free_phy_mem(UINT32 phy_addr);
-	FNRESLT get_free_phy_mem(UINT32 size,UPINT32 phy_addr,UPINT32 vir_addr);
-	FNRESLT init_phy_mem(INT0);
-	FNRESLT exit_phy_mem(INT0);
+int list_all_phy_struct(void);
+int free_all_phy_struct(void);
+int free_phy_mem(u32 phy_addr);
+int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr);
+int init_phy_mem(void);
+int exit_phy_mem(void);
 
 #endif

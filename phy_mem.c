@@ -39,7 +39,7 @@ static u32 phy_addr_start;
 static u32 phy_addr_end;
 
 
-int get_mem_node(struct dma_memory **phy_mem, u8 cond)
+static int get_mem_node(struct dma_memory **phy_mem, u8 cond)
 {
 	static u32 phy_mem_res;
 
@@ -61,7 +61,7 @@ int get_mem_node(struct dma_memory **phy_mem, u8 cond)
 	return 0;
 }
 
-int list_all_phy_struct()
+int list_all_phy_struct(void)
 {
 	struct dma_memory *phy_mem = NULL;
 	int ret_val;
@@ -93,7 +93,6 @@ int list_all_phy_struct()
 
 	return 0;
 }
-EXPORT_SYMBOL(list_all_phy_struct);
 
 int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr)
 {
@@ -219,55 +218,6 @@ int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr)
 
 	return 0;
 }
-EXPORT_SYMBOL(get_free_phy_mem);
-
-int get_adress(u32 *phy_addr, u32 *vir_addr, u32 *addr)
-{
-	int ret_val;
-	struct dma_memory *phy_mem = NULL;
-
-	*addr = 0;
-
-	mutex_lock(&phy_memory_mutex);
-
-	ret_val	= get_mem_node(&phy_mem, GET_MEM_NODE);
-	
-	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
-		mutex_unlock(&phy_memory_mutex);
-		return ret_val;
-	}
-
-	while (phy_mem) {
-		if (phy_addr) {
-			if (phy_addr == (u32 *) phy_mem->address_start) {
-				*addr = phy_mem->virtual_address;
-				break;
-			}
-		}
-
-		if (vir_addr) {
-			if (vir_addr == (u32 *)phy_mem->virtual_address) {
-				*addr = phy_mem->address_start;				
-				break;
-			}
-		}
-
-		phy_mem = phy_mem->next;
-	}
-
-	if (!*addr) {
-		printk(KERN_ERR "Memory Invalid : physical memory not " \
-				"allocated from phy_mem\n");
-		list_all_phy_struct();
-		mutex_unlock(&phy_memory_mutex);
-		TRACE_ERR_AND_RET(FAIL);
-	}
-
-	mutex_unlock(&phy_memory_mutex);
-
-	return 0;
-}
-EXPORT_SYMBOL(get_adress);
 
 int free_phy_mem(u32 phy_addr)
 {
@@ -342,7 +292,6 @@ int free_phy_mem(u32 phy_addr)
 
 	return 0;
 }
-EXPORT_SYMBOL(free_phy_mem);
 
 int free_all_phy_struct()
 {
@@ -379,7 +328,6 @@ int free_all_phy_struct()
 
 	return 0;
 }
-EXPORT_SYMBOL(free_all_phy_struct);
 
 int init_phy_mem()
 {
