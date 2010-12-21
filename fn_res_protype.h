@@ -36,27 +36,14 @@
  * *********************************************************************************************************
  */
 
-/*
- * common.c
- */
-
-PINT0 map_kernel_space(ULINT32 physaddr, UINT32 size);
-INT32 unmap_kernel_space(volatile PINT0 start, size_t length);
-FNRESLT printstring(IN UPINT8 string,IN UINT32 string_length);
 
 /*
  * error.c
  */
 
-FNRESLT_NONE trace_error(PINT8 file_name,PINT8 function_name,UINT32 line_no,UINT32 Error_num);
+void trace_error(char* file_name, char* function_name, u32 line_no, 
+		u32 error_no);
 
-/*
- * memory_monitor.c
- */
-
-PINT0 wrapper_memory_api(UPINT8 function_name,UINT32 lineno,UDPINT32 address,UINT32 size,UINT32 block,UINT32 status);
-FNRESLT check_pointer_availability(UPINT32 list_memory,UINT32 count,UPINT32 pointer,UPINT32 current_record);
-FNRESLT maintain_log(UPINT8 function_name,UINT32 lineno,UDPINT32 pointer,UINT32 allocation_memory_size,UINT32 block_size,UINT32 status);
 
 #if defined(CONFIG_DRIVER)
 /*
