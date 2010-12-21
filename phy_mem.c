@@ -33,7 +33,7 @@
  * Include Header file
  */
 
-#include "../../../inc_header.h"
+#include "inc_header.h"
 
 /*
  * Global variables

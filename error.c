@@ -32,7 +32,7 @@
  * Header file inclution part
  */
 
-#include "../../inc_header.h"
+#include "inc_header.h"
 #ifdef CONFIG_APPLICATION
 	#define printf(x...) printf(x)
 	#define KERN_DEBUG ""
