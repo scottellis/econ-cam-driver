@@ -34,6 +34,7 @@
 /*
  * I2C
  */
+#define I2C_FLAG_READ			0x01
 
 #define OV3640_I2C_ADDRESS		0x3C
 #define I2C_SLAVE_ADDRESS		OV3640_I2C_ADDRESS

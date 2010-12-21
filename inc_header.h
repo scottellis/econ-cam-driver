@@ -100,7 +100,6 @@
 #include "isp.h"
 #include "v4l2_driver_base.h"
 #include "omap_v4l2.h"
-#include "i2c.h"
 
 /*
  * include the sensor file
