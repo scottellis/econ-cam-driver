@@ -37,12 +37,10 @@
 static DEFINE_MUTEX(phy_memory_mutex);
 static u32 phy_addr_start;
 static u32 phy_addr_end;
-
+static u32 phy_mem_res;
 
 static int get_mem_node(struct dma_memory **phy_mem, u8 cond)
 {
-	static u32 phy_mem_res;
-
 	switch (cond) {
 	case GET_MEM_NODE:
 		if (phy_mem == NULL)
@@ -61,7 +59,7 @@ static int get_mem_node(struct dma_memory **phy_mem, u8 cond)
 	return 0;
 }
 
-int list_all_phy_struct(void)
+int list_all_phy_struct()
 {
 	struct dma_memory *phy_mem = NULL;
 	int ret_val;
@@ -340,9 +338,6 @@ int init_phy_mem()
 
 	/*
 	 * Find the kernel memory range
-	 * This is a bogus check since kernel mem is non-contiguous as
-	 * as specified in the u-boot args per the instructions. Over half the
-	 * kernel pages are after phy_addr_start for Overos with >= 256M.
 	 */
 	phys_end_kernel = (u32) virt_to_phys((PINT0)PAGE_OFFSET) 
 				+ (num_physpages << PAGE_SHIFT);
