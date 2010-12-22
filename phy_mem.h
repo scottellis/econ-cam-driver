@@ -34,17 +34,12 @@
 #define GET_MEM_NODE				0x01
 #define SET_MEM_NODE				0x02
 
-struct dma_memory
-{
+struct dma_memory {
 	struct dma_memory *next;
-
 	UINT32 size;
-
 	UINT32 virtual_address;
 	UINT32 address_start;
-
 	UINT32 address_end;
-
 	struct dma_memory *back;
 };
 

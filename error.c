@@ -55,16 +55,16 @@
 															\
 	case Error_number:												\
 	{														\
-		printf(KERN_DEBUG "-------------------------------------------------------------------------------\n");	\
-		printf(KERN_DEBUG "ERROR!\n");										\
-		printf(KERN_DEBUG "From            : %s\n",MODULE_NAME);						\
-		printf(KERN_DEBUG "File            : %s\n",file_name);							\
-		printf(KERN_DEBUG "Function        : %s\n",function_name);						\
-		printf(KERN_DEBUG "Line number     : %u\n",line_no);							\
-		printf(KERN_DEBUG "Error name      : %s\n",Error_number_in_string);					\
-		printf(KERN_DEBUG "Error number Dec: %lld Hex: 0x%X \n",(INT64)Error_number,(INT32)Error_number);	\
-		printf(KERN_DEBUG "Reason          : %s\n",Reason_in_string);						\
-		printf(KERN_DEBUG "------------------------------------------------------------------------------\n");	\
+		printf(KERN_ALERT "-------------------------------------------------------------------------------\n");	\
+		printf(KERN_ALERT "ERROR!\n");										\
+		printf(KERN_ALERT "From            : %s\n",MODULE_NAME);						\
+		printf(KERN_ALERT "File            : %s\n",file_name);							\
+		printf(KERN_ALERT "Function        : %s\n",function_name);						\
+		printf(KERN_ALERT "Line number     : %u\n",line_no);							\
+		printf(KERN_ALERT "Error name      : %s\n",Error_number_in_string);					\
+		printf(KERN_ALERT "Error number Dec: %lld Hex: 0x%X \n",(INT64)Error_number,(INT32)Error_number);	\
+		printf(KERN_ALERT "Reason          : %s\n",Reason_in_string);						\
+		printf(KERN_ALERT "------------------------------------------------------------------------------\n");	\
 		break;													\
 	}	
 
@@ -72,14 +72,14 @@
 															\
 	default :													\
 	{														\
-		printf(KERN_DEBUG "------------------------------------------------------------------------------\n");	\
-		printf(KERN_DEBUG "ERROR!\n");										\
-		printf(KERN_DEBUG "From            : %s\n",MODULE_NAME);						\
-		printf(KERN_DEBUG "File            : %s\n",file_name);							\
-		printf(KERN_DEBUG "Function        : %s\n",function_name);						\
-		printf(KERN_DEBUG "Line number     : %u\n",line_no);							\
-		printf(KERN_DEBUG "Reason          : %s\n",Reason_in_string);						\
-		printf(KERN_DEBUG "------------------------------------------------------------------------------\n");	\
+		printf(KERN_ALERT "------------------------------------------------------------------------------\n");	\
+		printf(KERN_ALERT "ERROR!\n");										\
+		printf(KERN_ALERT "From            : %s\n",MODULE_NAME);						\
+		printf(KERN_ALERT "File            : %s\n",file_name);							\
+		printf(KERN_ALERT "Function        : %s\n",function_name);						\
+		printf(KERN_ALERT "Line number     : %u\n",line_no);							\
+		printf(KERN_ALERT "Reason          : %s\n",Reason_in_string);						\
+		printf(KERN_ALERT "------------------------------------------------------------------------------\n");	\
 		break;													\
 	}
 

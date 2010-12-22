@@ -59,7 +59,7 @@ static int get_mem_node(struct dma_memory **phy_mem, u8 cond)
 	return 0;
 }
 
-int list_all_phy_struct()
+static int list_all_phy_struct(void)
 {
 	struct dma_memory *phy_mem = NULL;
 	int ret_val;
@@ -291,42 +291,6 @@ int free_phy_mem(u32 phy_addr)
 	return 0;
 }
 
-int free_all_phy_struct()
-{
-	struct dma_memory *phy_mem = NULL;
-	struct dma_memory *phy_mem_next;
-	int ret_val;
-
-	mutex_lock(&phy_memory_mutex);
-
-	ret_val	= get_mem_node(&phy_mem, GET_MEM_NODE);
-
-	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
-		mutex_unlock(&phy_memory_mutex);
-		return ret_val;
-	}
-
-	while (phy_mem) {
-		phy_mem_next = phy_mem->next;
-		iounmap((PINT0)phy_mem->virtual_address);
-		kfree(phy_mem);
-		phy_mem	= phy_mem_next;
-	}
-
-	phy_mem	= NULL;
-
-	ret_val	= get_mem_node(&phy_mem, SET_MEM_NODE);
-
-	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
-		mutex_unlock(&phy_memory_mutex);
-		return ret_val;
-	}
-	
-	mutex_unlock(&phy_memory_mutex);
-
-	return 0;
-}
-
 int init_phy_mem()
 {
 	u32 phys_end_kernel;
@@ -336,10 +300,7 @@ int init_phy_mem()
 		phy_addr_end = PHY_MEM_END;
 	}
 
-	/*
-	 * Find the kernel memory range
-	 */
-	phys_end_kernel = (u32) virt_to_phys((PINT0)PAGE_OFFSET) 
+	phys_end_kernel = (u32) virt_to_phys((void *)PAGE_OFFSET) 
 				+ (num_physpages << PAGE_SHIFT);
 
 	if (phys_end_kernel > phy_addr_start) {
@@ -352,25 +313,13 @@ int init_phy_mem()
 		printk(KERN_INFO "\n");
 
 #ifndef CONFIG_ALLOW_DRIVER_PHY_MEMORY_OVERLAP
-		TRACE_ERR_AND_RET(MEM_KERN_OVERLAP);
+		return -1;
 #endif
 	}
 
 	printk(KERN_INFO "Using Reserved memory for " MODULE_NAME "\n");
 	printk(KERN_INFO "From Start address - 0x%08x \n", phy_addr_start);
 	printk(KERN_INFO "To End address - 0x%08x \n", phy_addr_end);
-
-	return 0;
-}
-
-int exit_phy_mem()
-{
-	int ret_val;
-
-	ret_val	= free_all_phy_struct();
-
-	if (CHECK_IN_FAIL_LIMIT(ret_val))
-		return FAIL;
 
 	return 0;
 }

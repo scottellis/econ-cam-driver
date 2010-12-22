@@ -41,11 +41,11 @@ void trace_error(char* file_name, char* function_name, u32 line_no,
 /*
  * phy_mem.c
  */
-int list_all_phy_struct(void);
-int free_all_phy_struct(void);
+/* int list_all_phy_struct(void); */
+/* int free_all_phy_struct(void); */
 int free_phy_mem(u32 phy_addr);
 int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr);
 int init_phy_mem(void);
-int exit_phy_mem(void);
+/* int exit_phy_mem(void); */
 
 #endif
