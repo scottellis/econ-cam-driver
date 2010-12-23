@@ -33,19 +33,19 @@
 
 #include "inc_header.h"
 
+#define GET_MEM_NODE				0x01
+#define SET_MEM_NODE				0x02
+
 
 static DEFINE_MUTEX(phy_memory_mutex);
 static u32 phy_addr_start;
 static u32 phy_addr_end;
 static u32 phy_mem_res;
 
-static int get_mem_node(struct dma_memory **phy_mem, u8 cond)
+static void get_mem_node(struct dma_memory **phy_mem, u8 cond)
 {
 	switch (cond) {
 	case GET_MEM_NODE:
-		if (phy_mem == NULL)
-			TRACE_ERR_AND_RET(FAIL);
-	
 		if (phy_mem_res)
 			*phy_mem = (struct dma_memory *) phy_mem_res;
 		
@@ -55,29 +55,20 @@ static int get_mem_node(struct dma_memory **phy_mem, u8 cond)
 		phy_mem_res = (u32) *phy_mem;
 		break;
 	}
-
-	return 0;
 }
 
 static int list_all_phy_struct(void)
 {
 	struct dma_memory *phy_mem = NULL;
-	int ret_val;
-	u32 i;
 
-	ret_val	= get_mem_node(&phy_mem, GET_MEM_NODE);
+	get_mem_node(&phy_mem, GET_MEM_NODE);
 
-	if (CHECK_IN_FAIL_LIMIT(ret_val))
-		return ret_val;
-
-	printk("\n\n\nMem.no             Memstart                    Memend" \
+	printk("\n\n\nMemstart                    Memend" \
 		"           Virtual address       Size\n");
 
-	i = 0;
 	while (phy_mem) {
-		printk("%d                 0x%x                  0x%x" \
+		printk("0x%x                  0x%x" \
 			"        0x%x         0x%x          0x%x  0x%x\n",
-			i,
 			(u32)phy_mem->address_start,
 			(u32)phy_mem->address_end,
 			(u32)phy_mem->virtual_address,
@@ -86,7 +77,6 @@ static int list_all_phy_struct(void)
 			(u32)phy_mem->next);
 
 		phy_mem	= phy_mem->next;
-		i++;
 	}
 
 	return 0;
@@ -95,10 +85,9 @@ static int list_all_phy_struct(void)
 int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr)
 {
 	u32 addr_start = phy_addr_start;
-	u32 addr_end	= phy_addr_end;
+	u32 addr_end = phy_addr_end;
 	u32 mem_fnode_st;
 	u8 mem_fnode_flag = 0;
-	int ret_val;
 	struct dma_memory *phy_mem = NULL;
 	struct dma_memory *phy_mem_next	= NULL;
 	struct dma_memory *phy_new;
@@ -106,13 +95,8 @@ int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr)
 
 	mutex_lock(&phy_memory_mutex);
 
-	ret_val	= get_mem_node(&phy_mem, GET_MEM_NODE);
-	
-	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
-		mutex_unlock(&phy_memory_mutex);
-		return ret_val;
-	}
-
+	get_mem_node(&phy_mem, GET_MEM_NODE);
+		
 	if (addr_start & 0xFFF)
 		addr_start = addr_start + (0x1000 - (addr_start & 0xFFF));
 	
@@ -148,7 +132,7 @@ int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr)
 			else {
 				list_all_phy_struct();
 				mutex_unlock(&phy_memory_mutex);
-				TRACE_ERR_AND_RET(FAIL);
+				return -ENOMEM;
 			}
 		}
 	}
@@ -170,7 +154,7 @@ int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr)
 
 	if (phy_new == NULL) {
 		mutex_unlock(&phy_memory_mutex);
-		TRACE_ERR_AND_RET(FAIL);
+		return -ENOMEM;
 	}
 
 	memset(phy_new, 0x00, sizeof(struct dma_memory));
@@ -221,17 +205,11 @@ int free_phy_mem(u32 phy_addr)
 {
 	struct dma_memory *phy_mem = NULL;
 	struct dma_memory *phy_mem_last	= NULL;
-	int ret_val;
-
+	
 	mutex_lock(&phy_memory_mutex);
 
-	ret_val	= get_mem_node(&phy_mem, GET_MEM_NODE);
+	get_mem_node(&phy_mem, GET_MEM_NODE);
 	
-	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
-		mutex_unlock(&phy_memory_mutex);
-		return ret_val;
-	}
-
 	while (phy_mem) {
 		if (phy_addr == phy_mem->address_start) 
 			break;
@@ -247,43 +225,26 @@ int free_phy_mem(u32 phy_addr)
 
 		if (phy_mem->back) {
 			phy_mem->back->next = phy_mem->next;
-			iounmap((PINT0)phy_mem->virtual_address);
+			iounmap((void *)phy_mem->virtual_address);
 			kfree(phy_mem);
 		}
 		else {
-			ret_val	= get_mem_node(&phy_mem,GET_MEM_NODE);
-			
-			if (CHECK_IN_FAIL_LIMIT(ret_val)) {
-				mutex_unlock(&phy_memory_mutex);
-				return ret_val;
-			}
-
+			get_mem_node(&phy_mem,GET_MEM_NODE);
 			iounmap((PINT0)phy_mem->virtual_address);
 			kfree(phy_mem);
 
 			if (phy_mem_last) {
 				phy_mem	= phy_mem_last;
-				ret_val	= get_mem_node(&phy_mem, SET_MEM_NODE);
-				
-				if (CHECK_IN_FAIL_LIMIT(ret_val)) {
-					mutex_unlock(&phy_memory_mutex);
-					return ret_val;
-				}
+				get_mem_node(&phy_mem, SET_MEM_NODE);			
 			}
 			else {
 				phy_mem	= NULL;			
-				
-				ret_val	= get_mem_node(&phy_mem,SET_MEM_NODE);
-
-				if (CHECK_IN_FAIL_LIMIT(ret_val)) {
-					mutex_unlock(&phy_memory_mutex);
-					return ret_val;
-				}
+				get_mem_node(&phy_mem, SET_MEM_NODE);
 			}
 		}
 	}
 	else {
-		TRACE_ERR_AND_RET(FAIL);
+		return -ENOMEM;
 	}
 	
 	mutex_unlock(&phy_memory_mutex);

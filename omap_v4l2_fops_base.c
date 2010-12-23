@@ -38,6 +38,7 @@
  */
 
 #include "inc_header.h"
+#include "phy_mem.h"
 
 /************************************************************************************************************
  *  
@@ -268,11 +269,10 @@ INT32 omap_v4l2_read(struct file *file, INT8 *buf, size_t count, loff_t * ppos)
  * Get the memory from the kernel
  */
 
-	ret_val	= get_free_phy_mem(cam->capture.v2f.fmt.pix.sizeimage,&cam->still.phy_addr,&cam->still.vir_addr);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (get_free_phy_mem(cam->capture.v2f.fmt.pix.sizeimage,
+				&cam->still.phy_addr, &cam->still.vir_addr))
 		goto exit;
-	}
+
 
 	ret_val	= isp_prg_sdram_addr(cam);
 	if(CHECK_IN_FAIL_LIMIT(ret_val))
@@ -354,21 +354,15 @@ INT32 omap_v4l2_read(struct file *file, INT8 *buf, size_t count, loff_t * ppos)
 
 		cam->task.bit.still = DISABLE;
 	
-		ret_val	= free_phy_mem(cam->still.phy_addr);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
+		if (free_phy_mem(cam->still.phy_addr))
 			goto exit;
-		}
 
 		return -ETIME;
 	}
 	err = copy_to_user(buf,(UPINT8)cam->still.vir_addr, cam->capture.v2f.fmt.pix.sizeimage);
 
-	ret_val	= free_phy_mem(cam->still.phy_addr);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (free_phy_mem(cam->still.phy_addr))
 		goto exit;
-	}
 
 	cam->task.bit.still	= DISABLE;
 

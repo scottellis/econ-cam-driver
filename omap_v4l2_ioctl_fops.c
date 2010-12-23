@@ -37,6 +37,7 @@
  */
 
 #include "inc_header.h"
+#include "phy_mem.h"
 
 /************************************************************************************************************
  *  
@@ -349,8 +350,7 @@ FNRESLT omap_v4l2_ctrl(cam_data *cam)
 FNRESLT omap_v4l2_req_buf(cam_data *cam,struct v4l2_requestbuffers *req)
 {
 	UINT32 i;
-	FNRESLT ret_val;
-
+	
 	if(cam->task.bit.capture	== ENABLE)
 	{
 /*
@@ -386,11 +386,9 @@ FNRESLT omap_v4l2_req_buf(cam_data *cam,struct v4l2_requestbuffers *req)
 	{
 		if(cam->capture.frame[i].buffer.m.offset)
 		{
-			ret_val	= free_phy_mem(cam->capture.frame[i].buffer.m.offset);
-			if(CHECK_IN_FAIL_LIMIT(ret_val))
-			{
-				TRACE_ERR_AND_RET(FAIL);
-			}
+			if (free_phy_mem(cam->capture.frame[i].buffer.m.offset))
+				return -1;
+
 			cam->capture.frame[i].buffer.m.offset		= DISABLE;
 		}
 	}
@@ -401,13 +399,11 @@ FNRESLT omap_v4l2_req_buf(cam_data *cam,struct v4l2_requestbuffers *req)
 
 	for(i = 0;i < (req->count+1);i++)
 	{
-		ret_val	= get_free_phy_mem(	cam->capture.v2f.fmt.pix.sizeimage,
-						(UPINT32)&cam->capture.frame[i].buffer.m.offset,NULL);
-
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
+		if (get_free_phy_mem(cam->capture.v2f.fmt.pix.sizeimage,
+				(UPINT32)&cam->capture.frame[i].buffer.m.offset,
+				NULL))
 			break;
-		}
+
 
 		cam->capture.frame[i].buffer.index	= i;
 		cam->capture.frame[i].buffer.flags	= V4L2_BUF_FLAG_MAPPED;
@@ -682,11 +678,9 @@ FNRESLT omap_v4l2_stream_off(cam_data *cam,INT32 *type)
 	{
 		if(cam->capture.frame[i].buffer.m.offset)
 		{
-			ret_val	= free_phy_mem(cam->capture.frame[i].buffer.m.offset);
-			if(CHECK_IN_FAIL_LIMIT(ret_val))
-			{
-				TRACE_ERR_AND_RET(ret_val);
-			}
+			if (free_phy_mem(cam->capture.frame[i].buffer.m.offset))
+				return -1;
+
 			cam->capture.frame[i].buffer.m.offset		= DISABLE;
 		}
 		memset(&cam->capture.frame[i],DISABLE,sizeof(struct __capture_dq_buf));

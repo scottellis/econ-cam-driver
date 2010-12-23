@@ -31,8 +31,6 @@
 #ifndef __PHY_MEM_
 #define __PHY_MEM_
 
-#define GET_MEM_NODE				0x01
-#define SET_MEM_NODE				0x02
 
 struct dma_memory {
 	struct dma_memory *next;
@@ -42,5 +40,9 @@ struct dma_memory {
 	UINT32 address_end;
 	struct dma_memory *back;
 };
+
+int free_phy_mem(u32 phy_addr);
+int get_free_phy_mem(u32 size, u32 *phy_addr, u32 *vir_addr);
+int init_phy_mem(void);
 
 #endif
