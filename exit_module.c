@@ -112,6 +112,18 @@ FNRESLT free_all_irq(cam_data *cam)
 	free_irq(cam->irq,cam);
 	return SUCCESS;
 }
+
+static int exit_omap_hwr(cam_data *cam)
+{
+	if (exit_cam_interface(cam))
+		return -1;
+
+	if (exit_cam_isp_ccdc(cam))
+		return -1;
+
+	return 0;
+}
+
 /************************************************************************************************************
  *  
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE
@@ -182,11 +194,8 @@ INT32 isp_remove(struct platform_device *pdev)
 		TRACE_ERR_AND_RET(FAIL);
 	}
 
-	ret_val	= exit_omap_hwr(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
+	if (exit_omap_hwr(cam))
+		return -1;
 
 	video_unregister_device(cam->video_dev);
 //	video_device_release(cam->video_dev);

@@ -156,72 +156,56 @@ irqreturn_t omap34xx_isp_isr(INT32 irq,PINT0 _cam)
 }
 
 
-/************************************************************************************************************
+/*
+ *  Parameter1	: cam_data *cam	- Base address of camera structure pointer
+ *  Parameter2	: xclk		- Needed mclk given to sensor
+ *  Parameter3	: xclksel	- Needed xclk mode in the omap
  *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	isp_set_xclk
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Parameter2	:	xclk		- Needed mclk given to sensor
- *  Parameter3	:	xclksel		- Needed xclk mode in the omap
-*  
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
  *  Description	: 	Sets the mclk provided to the sensor
- *  Comments	:  	
- ************************************************************************************************************/
-
-FNRESLT isp_set_xclk(cam_data *cam,UINT32 xclk, UINT8 xclksel, UPINT32 current_xclk)
-{
+ */
 #define CM_CAM_MCLK_HZ			216000000
 #define ISPTCTRL_CTRL_DIV_BYPASS	0x1F
+static int isp_set_xclk(cam_data *cam, u32 xclk, u8 xclksel, u32 *current_xclk)
+{
+	u32 divisor;
+	u32 currentxclk;
 
-	UINT32 divisor;
-	UINT32 currentxclk;
-
-	if (xclk >= CM_CAM_MCLK_HZ)
-	{
+	if (xclk >= CM_CAM_MCLK_HZ) {
 		divisor = ISPTCTRL_CTRL_DIV_BYPASS;
 		currentxclk = CM_CAM_MCLK_HZ;
-	}else if (xclk >= 2)
-	{
+	}
+	else if (xclk >= 2) {
 		divisor = CM_CAM_MCLK_HZ / xclk;
+
 		if (divisor >= ISPTCTRL_CTRL_DIV_BYPASS)
 			divisor = ISPTCTRL_CTRL_DIV_BYPASS - 1;
+
 		currentxclk = CM_CAM_MCLK_HZ / divisor;
-	}else
-	{
+	}
+	else {
 		divisor = xclk;
 		currentxclk = 0;
 	}
 
-	switch (xclksel)
-	{
-		case 0:
-		{
-			cam->isp->isp_main.reg.tctrl_ctrl.bit.diva	= divisor;
-		}break;
+	switch (xclksel) {
+	case 0:
+		cam->isp->isp_main.reg.tctrl_ctrl.bit.diva	= divisor;
+		break;
 
-		case 1:
-		{
-			cam->isp->isp_main.reg.tctrl_ctrl.bit.divb	= divisor;
-		}break;
+	case 1:
+		cam->isp->isp_main.reg.tctrl_ctrl.bit.divb	= divisor;
+		break;
 
-		default:
-		{
-			return FAIL;
-		}
+	default:
+		return -1;
 	}
 
-	if(current_xclk)
-	{
-		*current_xclk	= currentxclk;
-	}
-	return SUCCESS;
+	if (current_xclk)
+		*current_xclk = currentxclk;
+
+	return 0;
 }
+
 /************************************************************************************************************
  *  
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
@@ -240,87 +224,54 @@ FNRESLT isp_set_xclk(cam_data *cam,UINT32 xclk, UINT8 xclksel, UPINT32 current_x
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT mclk_to_sensor(cam_data *cam,UINT32 xclk,UPINT32 clk_set)
+FNRESLT mclk_to_sensor(cam_data *cam, UINT32 xclk, UPINT32 clk_set)
 {
-	FNRESLT ret_val;
-
-	ret_val	= isp_set_xclk(cam,xclk,0,clk_set);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		TRACE_ERR_AND_RET(FAIL);		
-	}
-
-	return SUCCESS;
+	return isp_set_xclk(cam, xclk, 0, clk_set);
 }
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	omap_isp_base_struct
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Parameter2	:	option		- command to perform 
- *  
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	maintain the base pointer of pin configuration.
- *  Comments	:  	
- ************************************************************************************************************/
-
-FNRESLT omap_isp_base_struct(cam_data *cam,UINT8 option)
-{
 
 /*
- * SET_ADDRESS 
- * GET_ADDRESS 
- * MAKE_ADDRESS_INVALID
- * CREATE_ADDRESS
+ * Maintain the base pointer of pin configuration.
  */
+static int omap_isp_base_struct(cam_data *cam, u8 option)
+{
 	static UINT32 g_cam_isp;
 
-	if(cam == NULL)
-	{
-		TRACE_ERROR(MEMORY_NOT_VALID);	
-		return MEMORY_NOT_VALID;
-	}
-	switch(option)
-	{
-		case SET_ADDRESS:
-		{
-			g_cam_isp =(UINT32)cam->pin;			
-		}break;
-		case GET_ADDRESS:
-		{
-			cam->isp	= (isp_reg_bit_access*)g_cam_isp;
-		}break;
-		case MAKE_ADDRESS_INVALID:
-		{
-			if(cam->isp	== NULL)
-			{
-				TRACE_ERR_AND_RET(FAIL);
-			}
-			iounmap(cam->isp);
-			cam->isp	= NULL;
-			g_cam_isp	= DISABLE;
-		}break;
-		case CREATE_ADDRESS:
-		{
-			cam->isp	= ioremap(BADDR_ISP,MAP_ISP_REGION);
-			if(cam->isp	== NULL)
-			{
-				printk(KERN_ERR "Unable to remap the isp registers\n");
-				TRACE_ERR_AND_RET(FAIL);
-			}			
-		}break;
-		default:
-		{
-			TRACE_ERR_AND_RET(FAIL);
+	if (!cam)
+		return -EINVAL;
+
+	switch (option) {
+	case SET_ADDRESS:
+		g_cam_isp = (UINT32)cam->pin;			
+		break;
+	
+	case GET_ADDRESS:
+		cam->isp = (isp_reg_bit_access*) g_cam_isp;
+		break;
+
+	case MAKE_ADDRESS_INVALID:
+		if (!cam->isp)
+			return -EINVAL;
+
+		iounmap(cam->isp);
+		cam->isp = NULL;
+		g_cam_isp = 0;
+		break;
+	
+	case CREATE_ADDRESS:
+		cam->isp = ioremap(BADDR_ISP, MAP_ISP_REGION);
+
+		if (!cam->isp) {
+			printk(KERN_ERR "Unable to remap the isp registers\n");
+			return -ENOMEM;
 		}
+
+		break;
+
+	default:
+		return -EINVAL;
 	}
-	return SUCCESS;
+
+	return 0;
 }
 
 /************************************************************************************************************
@@ -540,42 +491,12 @@ FNRESLT isp_prg_sdram_addr(cam_data *cam)
 	return SUCCESS;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	disable the irq0 interrupt
- *  Comments	:  	
- ************************************************************************************************************/
+
 FNRESLT disable_isp_irq0(cam_data *cam)
 {
 	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE	= DISABLE;
 	return SUCCESS;
 }
-
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	Configure the isp side
- *  Comments	:  	
- ************************************************************************************************************/
 
 FNRESLT isp_configure(cam_data *cam)
 {
@@ -709,16 +630,10 @@ FNRESLT disable_ccdc(cam_data *cam)
  *  Description	: 	init routine of ccdc done here
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT init_cam_isp_ccdc(cam_data *cam)
+int init_cam_isp_ccdc(cam_data *cam)
 {
-	FNRESLT ret_val;
-/*
- * Validate the input
- */
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
+	if (!cam)
+		return -EINVAL;
 
 /*
  * map the physical address of isp registers 
@@ -732,64 +647,32 @@ FNRESLT init_cam_isp_ccdc(cam_data *cam)
 		TRACE_ERR_AND_RET(FAIL);		
 	}
 #endif
-	ret_val	= omap_isp_base_struct(cam,SET_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (omap_isp_base_struct(cam, SET_ADDRESS)) {
 		printk(KERN_ERR "Failed to map the camera isp registers\n");
-		TRACE_ERR_AND_RET(FAIL);		
+		return -1;
 	}
 
-	if(cam_mclk)
-	{
-		ret_val	= isp_set_xclk(cam,cam_mclk,0,NULL);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
-			TRACE_ERR_AND_RET(FAIL);		
-		}
+	if (cam_mclk) {
+		if (isp_set_xclk(cam, cam_mclk, 0, NULL))
+			return -1;
 	}
 /*
  * Call back function for changing the mclk is assinged here
  */
-	cam->modify_mclk_to_sensor	= mclk_to_sensor;
-	return SUCCESS;
+	cam->modify_mclk_to_sensor = mclk_to_sensor;
+
+	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	exit_cam_isp_ccdc
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	Perform cleanup routine done here
- *  Comments	:  	
- ************************************************************************************************************/
-FNRESLT exit_cam_isp_ccdc(cam_data *cam)
+int exit_cam_isp_ccdc(cam_data *cam)
 {
-	FNRESLT ret_val;
-/*
- * Validate the input
- */
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
-/*
- * unmap the kernel space and 
- * Perform cleaning of structure
- */
+	if (!cam)
+		return -EINVAL;
 
-	ret_val	= omap_isp_base_struct(cam,MAKE_ADDRESS_INVALID);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (omap_isp_base_struct(cam, MAKE_ADDRESS_INVALID)) {
 		printk(KERN_ERR "Failed to unmap the camera isp registers\n");
-		TRACE_ERR_AND_RET(FAIL);		
+		return -1;		
 	}
 
-	return SUCCESS;
+	return 0;
 }

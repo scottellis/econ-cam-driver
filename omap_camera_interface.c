@@ -32,113 +32,56 @@
  */
 
 
-/*
- * ----------------------------------------------------------------------------------------------------------
- *
- * 					Header files inclusion part
- *
- * ----------------------------------------------------------------------------------------------------------
- */
-
 #include "inc_header.h"
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: OMAP_CAM_INTERFACE_01	
- *  Name	:	omap_pin_base_struct
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 
- *  Parameter2	:	UINT8 option	- command to the current function to perfom the mentioned task.
- *  						CREATE_ADDRESS
- *						SET_ADDRESS
- *						GET_ADDRESS
- *						MAKE_ADDRESS_INVALID
- *
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative error be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	stores the omap pin base structure pointer
- *  			and returns the base pointer when a request of GET_ADDRESS 
- *  			command be obtained from the calling functions 
- *  Comments	:  	
- ************************************************************************************************************/
-FNRESLT omap_pin_base_struct(cam_data *cam,UINT8 option)
+static u32 g_cam_interface;
+
+static int omap_pin_base_struct(cam_data *cam, UINT8 option)
 {
-	static UINT32 g_cam_interface;
+	switch (option) {
+	case SET_ADDRESS:
+		g_cam_interface = (u32) cam->pin;			
+		break;
 
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(MEMORY_NOT_VALID);
+	case GET_ADDRESS:
+		cam->pin = (cam_interface_pin_config*)g_cam_interface;
+		break;
+
+	case MAKE_ADDRESS_INVALID:
+		if (!cam->pin)
+			return -EINVAL;
+
+		iounmap(cam->pin);
+		cam->pin = NULL;
+		g_cam_interface	= 0;
+		break;
+	
+	case CREATE_ADDRESS:
+		cam->pin = ioremap(REG_CONTROL_PADCONF_CAM_HS, 4 * 1024);
+		
+		if (!cam->pin) {
+			printk(KERN_ERR  
+				"Unable to remap the pad config registers\n");
+			return -ENOMEM;
+		}	
+		
+		break;
+	
+	default:
+		return -EINVAL;
 	}
-	switch(option)
-	{
-		case SET_ADDRESS:
-		{
-			g_cam_interface =(UINT32)cam->pin;			
-		}break;
 
-		case GET_ADDRESS:
-		{
-			cam->pin	= (cam_interface_pin_config*)g_cam_interface;
-		}break;
-
-		case MAKE_ADDRESS_INVALID:
-		{
-			if(cam->pin	== NULL)
-			{
-				TRACE_ERR_AND_RET(FAIL);
-			}
-			iounmap(cam->pin);
-			cam->pin	= NULL;
-			g_cam_interface	= DISABLE;
-		}break;
-		case CREATE_ADDRESS:
-		{
-			cam->pin	= ioremap(REG_CONTROL_PADCONF_CAM_HS,4*1024);
-			if(cam->pin	== NULL)
-			{
-				printk(KERN_ERR "Unable to remap the padconfig registers\n");
-				TRACE_ERR_AND_RET(FAIL);
-			}			
-		}break;
-		default:
-		{
-			TRACE_ERR_AND_RET(FAIL);
-		}
-	}
-	return SUCCESS;
+	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_CAM_INTERFACE_02
- *  Name	:	configure_cam_interface
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative error be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	:	Confgure the interface lines between sensor and ccdc unit as camera interface lines  	
- *  Comments	:  	
- ************************************************************************************************************/
-FNRESLT configure_cam_interface(cam_data *cam)
-{
-/*
- * Validate the input
+/* 
+ * Confgure the interface lines between sensor and ccdc unit as camera interface lines 
  */
-	if(cam == NULL || cam->pin == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
-/*
- * perform operation
- */	
+static int configure_cam_interface(cam_data *cam)
+{
+	if (!cam->pin)
+		return -EINVAL;
+
 	cam->pin->bit_hs_vs.bit.cam_hs.MUXMODE				= DISABLE;
 	cam->pin->bit_hs_vs.bit.cam_hs.INPUTENABLE			= ENABLE;
 	cam->pin->bit_hs_vs.bit.cam_hs.PULLUDENABLE			= ENABLE;
@@ -225,9 +168,7 @@ FNRESLT configure_cam_interface(cam_data *cam)
 	cam->pin->bit_d11_xclkb.bit.cam_xclkb.PULLUDENABLE		= DISABLE;
 	cam->pin->bit_d11_xclkb.bit.cam_xclkb.PULLTYPESELECT		= DISABLE;
 
-/*
- * I2C
- */
+
 	cam->pin->bit_i2c2_i2c3.bit.i2c3_scl.MUXMODE			= DISABLE;
 	cam->pin->bit_i2c2_i2c3.bit.i2c3_scl.INPUTENABLE		= ENABLE;
 	cam->pin->bit_i2c2_i2c3.bit.i2c3_scl.PULLUDENABLE		= ENABLE;
@@ -237,93 +178,43 @@ FNRESLT configure_cam_interface(cam_data *cam)
 	cam->pin->bit_i2c3_hdq_sio.bit.i2c3_sda.INPUTENABLE		= ENABLE;
 	cam->pin->bit_i2c3_hdq_sio.bit.i2c3_sda.PULLUDENABLE		= ENABLE;
 	cam->pin->bit_i2c3_hdq_sio.bit.i2c3_sda.PULLTYPESELECT		= ENABLE;
-	return SUCCESS;
+
+	return 0;
 }
 
-
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: OMAP_CAM_INTERFACE_03
- *  Name	:	init_cam_interface
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative error be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	init the camera interface configuration.
- *  Comments	:  	Each .c code have init and exit functions calling the init_xxx will initlize the 
- *  			the local variables and structure variable in the main structure.
- ************************************************************************************************************/
-FNRESLT init_cam_interface(cam_data *cam)
+int init_cam_interface(cam_data *cam)
 {
-	FNRESLT ret_val;
-/*
- * Validate the input
- */
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
+	if (!cam)
+		return -EINVAL;	
+
+	if (omap_pin_base_struct(cam, CREATE_ADDRESS)) {
+		printk(KERN_ERR "Failed to map the camera interface regs\n");
+		return -1;		
 	}
 
-	ret_val	= omap_pin_base_struct(cam,CREATE_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		printk(KERN_ERR "Failed to map the camera interface registers\n");
-		TRACE_ERR_AND_RET(FAIL);		
+	if (omap_pin_base_struct(cam, SET_ADDRESS)) {
+		printk(KERN_ERR "Failed to map the camera interface regs\n");
+		return -1;
 	}
 
-	ret_val	= omap_pin_base_struct(cam,SET_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		printk(KERN_ERR "Failed to map the camera interface registers\n");
-		TRACE_ERR_AND_RET(FAIL);		
-	}
-/*
- * Configured the camera interface
- */
-	ret_val	= configure_cam_interface(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		printk(KERN_ERR "Failed to map the camera interface registers\n");
-		TRACE_ERR_AND_RET(FAIL);		
+	if (configure_cam_interface(cam)) {
+		printk(KERN_ERR "Failed to map the camera interface regs\n");
+		return -1;		
 	}
 
-	return SUCCESS;
+	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: OMAP_CAM_INTERFACE_04
- *  Name	:	exit_cam_interface
- *  Parameter1	:	INT0
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative error be returned
- *  					  Note: For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *  Description	: 	exit part of code in the camera interface configuration.
- *  Comments	:  	Each .c code have init and exit functions calling the init_xxx will initlize the 
- *  			the local variables and structure variable in the main structure.
- *  			
- ************************************************************************************************************/
-FNRESLT exit_cam_interface(cam_data *cam)
+int exit_cam_interface(cam_data *cam)
 {
-	FNRESLT ret_val;
-/*
- * Validate the input
- */
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
+	if (!cam)
+		return -EINVAL;
+
+
+	if (omap_pin_base_struct(cam, MAKE_ADDRESS_INVALID)) {
+		printk(KERN_ERR "Failed to unmap the camera interface regs\n");
+		return -1;		
 	}
 
-	ret_val	= omap_pin_base_struct(cam,MAKE_ADDRESS_INVALID);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		printk(KERN_ERR "Failed to unmap the camera interface registers\n");
-		TRACE_ERR_AND_RET(FAIL);		
-	}
-	return SUCCESS;
+	return 0;
 }

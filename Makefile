@@ -5,7 +5,7 @@ DRIVERNAME=v4l2_driver
 ifneq ($(KERNELRELEASE),)
 	obj-m += $(DRIVERNAME).o
 	$(DRIVERNAME)-objs :=	init_module.o \
-				isp.o omap_hwr_base.o \
+				isp.o \
 				sens_ov3640.o \
 				v4l2_driver_base.o \
 				omap_camera_interface.o \

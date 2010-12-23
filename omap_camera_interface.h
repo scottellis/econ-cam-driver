@@ -209,5 +209,5 @@ typedef struct cam_interface
 
 	}bit_i2c3_hdq_sio;
 
-}cam_interface_pin_config;
+} cam_interface_pin_config;
 

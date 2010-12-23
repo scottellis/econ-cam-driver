@@ -125,6 +125,17 @@ static void init_cam_struct(cam_data *cam)
 	init_waitqueue_head(&cam->capture.capture_frame_complete);	
 }
 
+static int init_omap_hwr(cam_data *cam)
+{
+	if (init_cam_interface(cam))
+		return -1;
+
+	if (init_cam_isp_ccdc(cam))
+		return -1;
+
+	return 0;
+}
+
 static int isp_probe_late_init(cam_data *cam)
 {
 	FNRESLT ret_val;
@@ -155,11 +166,9 @@ static int isp_probe_late_init(cam_data *cam)
 		return -1;
 
 
-	ret_val	= init_omap_hwr(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (init_omap_hwr(cam)) {
 		printk(KERN_ERR "Failed to initialize omap hardware device\n");
-		TRACE_ERR_AND_RET(ret_val);
+		return -1;
 	}
 
 	ret_val	= register_sensor_bus(cam);

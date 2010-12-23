@@ -33,9 +33,9 @@
  * isp.c
  */
 irqreturn_t omap34xx_isp_isr(INT32 irq,PINT0 _isp);
-FNRESLT init_cam_isp_ccdc(cam_data *cam);
-FNRESLT exit_cam_isp_ccdc(cam_data *cam);
-FNRESLT isp_set_xclk(cam_data *cam,UINT32 xclk, UINT8 xclksel, UPINT32 current_xclk);
+int init_cam_isp_ccdc(cam_data *cam);
+int exit_cam_isp_ccdc(cam_data *cam);
+/* FNRESLT isp_set_xclk(cam_data *cam,UINT32 xclk, UINT8 xclksel, UPINT32 current_xclk); */
 FNRESLT isp_reset(cam_data *cam);
 FNRESLT isp_configure(cam_data *cam);
 FNRESLT enable_ccdc(cam_data *cam);
@@ -74,15 +74,16 @@ FNRESLT lm3553_exit(cam_data *cam);
 /*
  * omap_hwr_base.c
  */
-FNRESLT init_omap_hwr(cam_data *cam);
-FNRESLT exit_omap_hwr(cam_data *cam);
-
+/*
+int init_omap_hwr(cam_data *cam);
+int exit_omap_hwr(cam_data *cam);
+*/
 /*
  * omap_camera_interface.c
  */
 
-FNRESLT init_cam_interface(cam_data *cam);
-FNRESLT exit_cam_interface(cam_data *cam);
+int init_cam_interface(cam_data *cam);
+int exit_cam_interface(cam_data *cam);
 
 /*
  * omap_v4l2_fops_base.c
