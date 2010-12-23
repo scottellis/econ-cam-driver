@@ -37,6 +37,9 @@
  *
  ******************************************************************************/
 
+void trace_error(char* file_name, char* function_name, int line_no, 
+		int error_no);
+
 #define TRACE_ERROR(ARG1) 											\
 {														\
 	trace_error(__FILE__,(PINT8)__FUNCTION__,__LINE__,ARG1);						\

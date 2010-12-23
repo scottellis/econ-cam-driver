@@ -33,10 +33,7 @@
  */
 
 #include "inc_header.h"
-#ifdef CONFIG_APPLICATION
-	#define printf(x...) printf(x)
-	#define KERN_DEBUG ""
-#endif
+
 #ifdef CONFIG_DRIVER
 	#define printf(x...) printk(KERN_DEBUG x)	
 #endif	
@@ -97,7 +94,7 @@
  *  Description	: 	
  *  Comments	:  	Based on the error Number, Debug prints will be called.
  ************************************************************************************************************/
-FNRESLT_NONE trace_error(PINT8 file_name,PINT8 function_name,UINT32 line_no,UINT32 Error_num)
+FNRESLT_NONE trace_error(PINT8 file_name, PINT8 function_name, int line_no, int Error_num)
 {
 	switch(Error_num)
 	{
