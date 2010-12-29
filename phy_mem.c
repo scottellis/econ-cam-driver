@@ -32,6 +32,9 @@
 #include <linux/types.h>
 
 #include "inc_header.h"
+#include "Headerfile.h"
+
+#include "phy_mem.h"
 
 #define GET_MEM_NODE				0x01
 #define SET_MEM_NODE				0x02

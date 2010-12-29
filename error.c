@@ -33,10 +33,10 @@
  */
 
 #include "inc_header.h"
+#include "Headerfile.h"
 
-#ifdef CONFIG_DRIVER
-	#define printf(x...) printk(KERN_DEBUG x)	
-#endif	
+#define printf(x...) printk(KERN_DEBUG x)	
+
 /******************************************************************************
  *  				 Function 
  *				

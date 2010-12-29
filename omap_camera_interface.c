@@ -33,6 +33,8 @@
 
 
 #include "inc_header.h"
+#include "Headerfile.h"
+#include "v4l2_driver_base.h"
 
 static u32 g_cam_interface;
 

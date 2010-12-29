@@ -29,6 +29,14 @@
  *==========================================================================================================
  */
 
+#include <media/v4l2-dev.h>
+#include <mach/gpio.h>
+#include <media/v4l2-ioctl.h>
+
+#include "isp.h"
+#include "omap_camera_interface.h"
+
+
 /*
  * Global definitions
  */

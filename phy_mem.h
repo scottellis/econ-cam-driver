@@ -31,7 +31,6 @@
 #ifndef __PHY_MEM_
 #define __PHY_MEM_
 
-
 struct dma_memory {
 	struct dma_memory *next;
 	UINT32 size;

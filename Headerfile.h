@@ -31,54 +31,44 @@
 #include "typedef.h"
 #include "error.h"
 
-/*
- * Driver Part Header file 
- */
-#ifdef CONFIG_DRIVER
-	#include <linux/init.h>
-	#include <linux/module.h>
-	#include <linux/kernel.h> 		// printk() 
-	#include <linux/slab.h> 		// kmalloc() 
-	#include <linux/fs.h> 			// everything\ldots{} 
-	#include <linux/errno.h> 		// error codes 
-	#include <linux/types.h> 		// size_t 
-	#include <linux/proc_fs.h>
-	#include <linux/fcntl.h>		// O_ACCMODE 
-	#include <linux/ioport.h>
-	#include <asm/system.h>			// cli(), *_flags 
-	#include <asm/uaccess.h>		// copy_from/to_user 
-	#include <asm/io.h>			// inb, outb 
-	#include <linux/interrupt.h>
-	#include <linux/types.h>
-	#include <asm/types.h>
-	#include <linux/delay.h>		// for udelay()
-	#include <asm/delay.h>
-	#include <linux/unistd.h>
-	#include <linux/device.h>
-	#include <asm/dma.h>
-	#include <linux/version.h>
-	#include <linux/i2c.h>
-	#include <linux/platform_device.h>
-	#include <linux/clk.h>
-	#include <linux/page-flags.h>
-	#include<linux/mm.h>
 
-	#ifdef USE_KERNEL_MEMORY_MANAGE
-		#include "phy_mem.h"
-	#endif
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h> 		// printk() 
+#include <linux/slab.h> 		// kmalloc() 
+#include <linux/fs.h> 			// everything\ldots{} 
+#include <linux/errno.h> 		// error codes 
+#include <linux/types.h> 		// size_t 
+#include <linux/proc_fs.h>
+#include <linux/fcntl.h>		// O_ACCMODE 
+#include <linux/ioport.h>
+#include <asm/system.h>			// cli(), *_flags 
+#include <asm/uaccess.h>		// copy_from/to_user 
+#include <asm/io.h>			// inb, outb 
+#include <linux/interrupt.h>
+#include <linux/types.h>
+#include <asm/types.h>
+#include <linux/delay.h>		// for udelay()
+#include <asm/delay.h>
+#include <linux/unistd.h>
+#include <linux/device.h>
+#include <asm/dma.h>
+#include <linux/version.h>
+#include <linux/i2c.h>
+#include <linux/platform_device.h>
+#include <linux/clk.h>
+#include <linux/page-flags.h>
+#include<linux/mm.h>
 
-	#ifdef USE_KERNEL_THREAD
-		#include <linux/kthread.h>
-		#include <linux/mutex.h>
-	#endif
-
-
-	#ifdef KERNEL_ARM_OMAP
-		#ifdef KERNEL_ARM_OMAP3530
-		#endif
-	#endif
-
+#ifdef USE_KERNEL_MEMORY_MANAGE
+	#include "phy_mem.h"
 #endif
+
+#ifdef USE_KERNEL_THREAD
+	#include <linux/kthread.h>
+	#include <linux/mutex.h>
+#endif
+
 
 
 /*
