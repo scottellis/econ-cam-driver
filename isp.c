@@ -43,14 +43,14 @@ module_param(cam_mclk,int, 0444);
  *  
  *  MODULE TYPE	:	ISR ROUTINE				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	omap34xx_isp_isr	
- *  Parameter1	:	INT32 irq
+ *  Parameter1	:	int irq
  *  Parameter2	:	void *_cam	- private data number
  *  Returns	:	irq - handled information
  *  Description	: 	interrupt service routine 
  *  Comments	:  	
  ************************************************************************************************************/
 
-irqreturn_t omap34xx_isp_isr(INT32 irq, void *_cam)
+irqreturn_t omap34xx_isp_isr(int irq, void *_cam)
 {
 	cam_data *cam	= _cam;
 	int ret_val;
@@ -221,7 +221,7 @@ static int isp_set_xclk(cam_data *cam, u32 xclk, u8 xclksel, u32 *current_xclk)
  *  Comments	:  	
  ************************************************************************************************************/
 
-int mclk_to_sensor(cam_data *cam, unsigned int xclk, UPINT32 clk_set)
+int mclk_to_sensor(cam_data *cam, unsigned int xclk, unsigned int *clk_set)
 {
 	return isp_set_xclk(cam, xclk, 0, clk_set);
 }
@@ -367,7 +367,7 @@ int program_dummy_isp_sdram_addr(cam_data *cam)
  ************************************************************************************************************/
 int isp_prg_sdram_addr(cam_data *cam)
 {
-	INT32	i;
+	int	i;
 	unsigned int	load_address_base_index	= DISABLE;
 	static struct timeval timestamp;
 	unsigned int	dummy_count	= DISABLE;

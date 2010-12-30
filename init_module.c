@@ -17,7 +17,7 @@
 
 #include "fn_protype.h"
 
-static INT32 video_nr = -1;
+static int video_nr = -1;
 
 
 static int init_plat_res(cam_data *cam)
@@ -143,7 +143,7 @@ static int init_omap_hwr(cam_data *cam)
 static int isp_probe_late_init(cam_data *cam)
 {
 	int ret_val;
-	INT32 ret;
+	int ret;
 
 	ret_val	= init_v4l2_base_struct(cam);
 	if(CHECK_IN_FAIL_LIMIT(ret_val))

@@ -85,16 +85,16 @@
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *
  *  Name	:	trace_error 
- *  Parameter1	:	PINT8 file_name 
- *  Parameter2	:	PINT8 function_name 
- *  Parameter3	:	UINT32 line_no
- *  Parameter4	:	UINT32 Error_num
+ *  Parameter1	:	char *file_name 
+ *  Parameter2	:	char *function_name 
+ *  Parameter3	:	unsigned int line_no
+ *  Parameter4	:	unsigned int Error_num
  *  
  *  Returns	:	void
  *  Description	: 	
  *  Comments	:  	Based on the error Number, Debug prints will be called.
  ************************************************************************************************************/
-void trace_error(PINT8 file_name, PINT8 function_name, int line_no, int Error_num)
+void trace_error(char *file_name, char *function_name, int line_no, int Error_num)
 {
 	switch(Error_num)
 	{

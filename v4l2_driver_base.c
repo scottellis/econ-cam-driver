@@ -40,7 +40,7 @@
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	v4l2_base_struct
  *  Parameter1	:	cam_data **cam	- pointer need to register
- *  Parameter2	:	UINT8 option	- set or get the address
+ *  Parameter2	:	unsigned char option	- set or get the address
  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
@@ -50,7 +50,7 @@
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-int v4l2_base_struct(cam_data **cam,UINT8 option)
+int v4l2_base_struct(cam_data **cam,unsigned char option)
 {
 
 /*

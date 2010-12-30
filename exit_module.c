@@ -129,12 +129,12 @@ static int exit_omap_hwr(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE
  *  Name	:	isp_remove
  *  Parameter1	:	struct platform_device *pdev
- *  Returns	:	INT32	- On sucess returns 0
+ *  Returns	:	int	- On sucess returns 0
  *  				- On Failure a negative number be returned
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-INT32 isp_remove(struct platform_device *pdev)
+int isp_remove(struct platform_device *pdev)
 {
 
 	int ret_val;

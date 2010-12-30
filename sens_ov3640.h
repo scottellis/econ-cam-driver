@@ -71,7 +71,7 @@
 
 typedef union _auto_focus_register_status
 {
-	UINT8 reg_data;
+	unsigned char reg_data;
 	struct
 	{
 /*
@@ -81,7 +81,7 @@ typedef union _auto_focus_register_status
  * 	1 0 	- Focused
  * 	1 1	- Capture	 
  */
-		UINT8 mode_step	:2;
+		unsigned char mode_step	:2;
 /*
  * Mode
  * 	0 0 	- Idle Mode
@@ -91,15 +91,15 @@ typedef union _auto_focus_register_status
  */
 
 
-		UINT8 mode		:2;
-		UINT8 RESERVED		:1;
-		UINT8 capture_mask	:1;
-		UINT8 mode_chg_mask	:1;
+		unsigned char mode		:2;
+		unsigned char RESERVED		:1;
+		unsigned char capture_mask	:1;
+		unsigned char mode_chg_mask	:1;
 /*
  * 	Step State 
  * 	1	- Failed 
  * 	0	- Success
  */
-		UINT8 step_state	:1;
+		unsigned char step_state	:1;
 	}focus;
 }af_status;

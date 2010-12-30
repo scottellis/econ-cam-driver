@@ -65,28 +65,28 @@
 
 struct isp_irq
 {
-	UVINT32 reserved0				:8;
-	UVINT32 ccdc_vd0_irq				:1;
-	UVINT32 ccdc_vd1_irq				:1;
-	UVINT32 ccdc_vd2_irq				:1;
-	UVINT32 ccdc_err_irq				:1;
-	UVINT32 h3a_af_done_irq				:1;
-	UVINT32 h3a_awb_done_irq			:1;
-	UVINT32 reserved1				:2;
-	UVINT32 hist_done_irq				:1;
-	UVINT32 ccdc_lsc_done				:1;
-	UVINT32 ccdc_lsc_prefectch_completed		:1;
-	UVINT32 ccdc_lsc_prefectch_error		:1;
-	UVINT32 prv_done_irq				:1;
-	UVINT32 cbuff_irq				:1;
-	UVINT32 reserved2				:2;
-	UVINT32 rsz_done_irq				:1;
-	UVINT32 ovf_irq					:1;
-	UVINT32 reserved3				:2;
-	UVINT32 mmu_err_irq				:1;
-	UVINT32 ocp_err_irq				:1;
-	UVINT32 sec_err_irq				:1;
-	UVINT32 hs_vs_irq				:1;					
+	volatile unsigned int reserved0				:8;
+	volatile unsigned int ccdc_vd0_irq				:1;
+	volatile unsigned int ccdc_vd1_irq				:1;
+	volatile unsigned int ccdc_vd2_irq				:1;
+	volatile unsigned int ccdc_err_irq				:1;
+	volatile unsigned int h3a_af_done_irq				:1;
+	volatile unsigned int h3a_awb_done_irq			:1;
+	volatile unsigned int reserved1				:2;
+	volatile unsigned int hist_done_irq				:1;
+	volatile unsigned int ccdc_lsc_done				:1;
+	volatile unsigned int ccdc_lsc_prefectch_completed		:1;
+	volatile unsigned int ccdc_lsc_prefectch_error		:1;
+	volatile unsigned int prv_done_irq				:1;
+	volatile unsigned int cbuff_irq				:1;
+	volatile unsigned int reserved2				:2;
+	volatile unsigned int rsz_done_irq				:1;
+	volatile unsigned int ovf_irq					:1;
+	volatile unsigned int reserved3				:2;
+	volatile unsigned int mmu_err_irq				:1;
+	volatile unsigned int ocp_err_irq				:1;
+	volatile unsigned int sec_err_irq				:1;
+	volatile unsigned int hs_vs_irq				:1;					
 };
 
 /*
@@ -130,132 +130,132 @@ typedef struct __isp_reg_bit_access
  * TCTRL_SHUT_LENGTH    RW     32    0x0000 006C 0x480B C06C Section 1.6.2.18
  */
 
-		UVINT32 ISP[((BADDR_ISP_CBUFF-BADDR_ISP)/4)];
+		volatile unsigned int ISP[((BADDR_ISP_CBUFF-BADDR_ISP)/4)];
 		struct
 		{	
-			UVINT32 ISP_VER;			// 0x0000 0000
+			volatile unsigned int ISP_VER;			// 0x0000 0000
 			union
 			{
-				UVINT32 ISP_SYSCONFIG;		// 0x0000 0004
+				volatile unsigned int ISP_SYSCONFIG;		// 0x0000 0004
 				struct
 				{
-					UVINT32 auto_idle		:1;
-					UVINT32 soft_reset		:1;
-					UVINT32 reserved1		:10;
-					UVINT32 midle_mode		:2;
+					volatile unsigned int auto_idle		:1;
+					volatile unsigned int soft_reset		:1;
+					volatile unsigned int reserved1		:10;
+					volatile unsigned int midle_mode		:2;
 				}bit;
 			}isp_sysconfig;
 			
 			union
 			{
-				UVINT32 ISP_SYSSTATUS;		// 0x0000 0008
+				volatile unsigned int ISP_SYSSTATUS;		// 0x0000 0008
 				struct
 				{
-					UVINT32 reset_done		:1;
+					volatile unsigned int reset_done		:1;
 				}bit;
 			}isp_sysstatus;
 			
 			union
 			{
-				UVINT32 ISP_IRQ0ENABLE;		// 0x0000 000C
+				volatile unsigned int ISP_IRQ0ENABLE;		// 0x0000 000C
 				struct isp_irq bit;
 			}isp_irq0enable;
 
 			union 
 			{
-				UVINT32 ISP_IRQ0STATUS;		// 0x0000 0010
+				volatile unsigned int ISP_IRQ0STATUS;		// 0x0000 0010
 				struct isp_irq bit;
 
 			}isp_irq0status;
 
 			union
 			{
-				UVINT32 ISP_IRQ1ENABLE;		// 0x0000 0014
+				volatile unsigned int ISP_IRQ1ENABLE;		// 0x0000 0014
 				struct isp_irq bit;
 
 			}isp_irq1enable;
 
 			union
 			{
-				UVINT32 ISP_IRQ1STATUS;		// 0x0000 0018
+				volatile unsigned int ISP_IRQ1STATUS;		// 0x0000 0018
 				struct isp_irq bit;
 			}isp_irq1status;
 
-			UVINT32 RESERVED0[5];
+			volatile unsigned int RESERVED0[5];
 			union
 			{
-				UVINT32 TCTRL_GRESET_LENGTH;	// 0x0000 0030
+				volatile unsigned int TCTRL_GRESET_LENGTH;	// 0x0000 0030
 				struct
 				{
-					UVINT32 length			:24;
-					UVINT32 reserved		:8;
+					volatile unsigned int length			:24;
+					volatile unsigned int reserved		:8;
 				}bit;
 			}tctrl_greset_length;
-			UVINT32 TCTRL_PSTRB_REPLAY;		// 0x0000 0034
-			UVINT32 RESERVED1[2];
+			volatile unsigned int TCTRL_PSTRB_REPLAY;		// 0x0000 0034
+			volatile unsigned int RESERVED1[2];
 			
 			union
 			{
-				UVINT32 ISP_CTRL;		// 0x0000 0040
+				volatile unsigned int ISP_CTRL;		// 0x0000 0040
 				struct
 				{
-					UVINT32 par_ser_clk_sel		:2;
-					UVINT32 par_bridge		:2;
-					UVINT32 par_clk_pol		:1;
-					UVINT32 reserved0		:1;
-					UVINT32 shift			:2;
-					UVINT32 ccdc_clk_en		:1;
-					UVINT32 cbuff_autogating	:1;
-					UVINT32 h3a_clk_en		:1;
-					UVINT32 hist_clk_en		:1;
-					UVINT32 prv_clk_en		:1;
-					UVINT32 rsz_clk_en		:1;
-					UVINT32 sync_detect		:2;
-					UVINT32 ccdc_ram_en		:1;
-					UVINT32 prev_ram_en		:1;
-					UVINT32 sbl_rd_ram_en		:1;
-					UVINT32 sbl_wr1_ram_en		:1;
-					UVINT32 sbl_wr0_ram_en		:1;
-					UVINT32 sbl_autoidle		:1;
-					UVINT32 reserved1		:6;
-					UVINT32 sbl_shared_rportb	:1;
-					UVINT32 ccdc_wen_pol		:1;
-					UVINT32 jpeg_flush		:1;
-					UVINT32 flush			:1;
+					volatile unsigned int par_ser_clk_sel		:2;
+					volatile unsigned int par_bridge		:2;
+					volatile unsigned int par_clk_pol		:1;
+					volatile unsigned int reserved0		:1;
+					volatile unsigned int shift			:2;
+					volatile unsigned int ccdc_clk_en		:1;
+					volatile unsigned int cbuff_autogating	:1;
+					volatile unsigned int h3a_clk_en		:1;
+					volatile unsigned int hist_clk_en		:1;
+					volatile unsigned int prv_clk_en		:1;
+					volatile unsigned int rsz_clk_en		:1;
+					volatile unsigned int sync_detect		:2;
+					volatile unsigned int ccdc_ram_en		:1;
+					volatile unsigned int prev_ram_en		:1;
+					volatile unsigned int sbl_rd_ram_en		:1;
+					volatile unsigned int sbl_wr1_ram_en		:1;
+					volatile unsigned int sbl_wr0_ram_en		:1;
+					volatile unsigned int sbl_autoidle		:1;
+					volatile unsigned int reserved1		:6;
+					volatile unsigned int sbl_shared_rportb	:1;
+					volatile unsigned int ccdc_wen_pol		:1;
+					volatile unsigned int jpeg_flush		:1;
+					volatile unsigned int flush			:1;
 				}bit;
 			}isp_ctrl;
 
-			UVINT32 ISP_SECURE;			// 0x0000 0044
-			UVINT32 RESERVED2[2];
+			volatile unsigned int ISP_SECURE;			// 0x0000 0044
+			volatile unsigned int RESERVED2[2];
 			union
 			{			
-				UVINT32 TCTRL_CTRL;		// 0x0000 0050
+				volatile unsigned int TCTRL_CTRL;		// 0x0000 0050
 				struct
 				{
-					UVINT32 diva			:5;
-					UVINT32 divb			:5;
-					UVINT32 divc			:9;
-					UVINT32 reserved0		:2;
-					UVINT32 shuten			:1;
-					UVINT32 pstrben			:1;
-					UVINT32 strben			:1;
-					UVINT32 shutpol			:1;
-					UVINT32 reserved1		:1;
-					UVINT32 strbpstrbpol		:1;
-					UVINT32 insel			:2;
-					UVINT32 greseten		:1;
-					UVINT32 gresetpol		:1;
-					UVINT32 gresetdir		:1;
+					volatile unsigned int diva			:5;
+					volatile unsigned int divb			:5;
+					volatile unsigned int divc			:9;
+					volatile unsigned int reserved0		:2;
+					volatile unsigned int shuten			:1;
+					volatile unsigned int pstrben			:1;
+					volatile unsigned int strben			:1;
+					volatile unsigned int shutpol			:1;
+					volatile unsigned int reserved1		:1;
+					volatile unsigned int strbpstrbpol		:1;
+					volatile unsigned int insel			:2;
+					volatile unsigned int greseten		:1;
+					volatile unsigned int gresetpol		:1;
+					volatile unsigned int gresetdir		:1;
 				}bit;
 			}tctrl_ctrl;
 			
-			UVINT32 TCTRL_FRAME;			// 0x0000 0054
-			UVINT32 TCTRL_PSTRB_DELAY;		// 0x0000 0058
-			UVINT32 TCTRL_STRB_DELAY;		// 0x0000 005C
-			UVINT32 TCTRL_SHUT_DELAY;		// 0x0000 0060
-			UVINT32 TCTRL_PSTRB_LENGTH;		// 0x0000 0064
-			UVINT32 TCTRL_STRB_LENGTH;		// 0x0000 0068
-			UVINT32 TCTRL_SHUT_LENGTH;		// 0x0000 006C
+			volatile unsigned int TCTRL_FRAME;			// 0x0000 0054
+			volatile unsigned int TCTRL_PSTRB_DELAY;		// 0x0000 0058
+			volatile unsigned int TCTRL_STRB_DELAY;		// 0x0000 005C
+			volatile unsigned int TCTRL_SHUT_DELAY;		// 0x0000 0060
+			volatile unsigned int TCTRL_PSTRB_LENGTH;		// 0x0000 0064
+			volatile unsigned int TCTRL_STRB_LENGTH;		// 0x0000 0068
+			volatile unsigned int TCTRL_SHUT_LENGTH;		// 0x0000 006C
 		}reg;
 	}isp_main;
 
@@ -274,7 +274,7 @@ typedef struct __isp_reg_bit_access
  * CBUFFx_THRESHOLD (1)  RW 32      0x0000 0070 + (0x4 * x) 0x480B C170 + (0x4 * x) Section 1.6.3.10
  */
 
-		UVINT32 ISP_CBUFF[((BADDR_ISP_CCDC-BADDR_ISP_CBUFF)/4)];
+		volatile unsigned int ISP_CBUFF[((BADDR_ISP_CCDC-BADDR_ISP_CBUFF)/4)];
 	}isp_cbuff;
 	
 	union
@@ -320,145 +320,145 @@ typedef struct __isp_reg_bit_access
  * CCDC_LSC_TABLE_OFFSET RW     32         0x0000 00A4             0x480B C6A4        Section 1.6.4.35
  */
 
-		UVINT32 ISP_CCDC[((BADDR_ISP_HIST-BADDR_ISP_CCDC)/4)];
+		volatile unsigned int ISP_CCDC[((BADDR_ISP_HIST-BADDR_ISP_CCDC)/4)];
 		struct
 		{
-			UVINT32 CCDC_PID;			// 0x0000 0000
+			volatile unsigned int CCDC_PID;			// 0x0000 0000
 			union
 			{
-				UVINT32 CCDC_PCR;		// 0x0000 0004
+				volatile unsigned int CCDC_PCR;		// 0x0000 0004
 				struct
 				{
-					UVINT32 enable				:1;
-					UVINT32 busy				:1;
+					volatile unsigned int enable				:1;
+					volatile unsigned int busy				:1;
 				}bit;
 			}ccdc_pcr;
 
 			union
 			{
-				UVINT32 CCDC_SYN_MODE;		// 0x0000 0008
+				volatile unsigned int CCDC_SYN_MODE;		// 0x0000 0008
 				struct
 				{
-					UVINT32 vdhdout				:1;
-					UVINT32 fldout				:1;
-					UVINT32 vdpol				:1;
-					UVINT32 hdpol				:1;
-					UVINT32 fldpol				:1;
-					UVINT32 exwen				:1;
-					UVINT32 datapol				:1;
-					UVINT32 fldmode				:1;
-					UVINT32 datsiz				:3;
-					UVINT32 pack8				:1;
-					UVINT32 inpmod				:2;
-					UVINT32 lpf				:1;
-					UVINT32 fldstat				:1;
-					UVINT32 vdhden				:1;
-					UVINT32 wen				:1;
-					UVINT32 vp2str				:1;
-					UVINT32 sdr2rsz				:1;
+					volatile unsigned int vdhdout				:1;
+					volatile unsigned int fldout				:1;
+					volatile unsigned int vdpol				:1;
+					volatile unsigned int hdpol				:1;
+					volatile unsigned int fldpol				:1;
+					volatile unsigned int exwen				:1;
+					volatile unsigned int datapol				:1;
+					volatile unsigned int fldmode				:1;
+					volatile unsigned int datsiz				:3;
+					volatile unsigned int pack8				:1;
+					volatile unsigned int inpmod				:2;
+					volatile unsigned int lpf				:1;
+					volatile unsigned int fldstat				:1;
+					volatile unsigned int vdhden				:1;
+					volatile unsigned int wen				:1;
+					volatile unsigned int vp2str				:1;
+					volatile unsigned int sdr2rsz				:1;
 				}bit;
 			}ccdc_syn_mode;
 
-			UVINT32 CCDC_HD_VD_WID;			// 0x0000 000C
-			UVINT32 CCDC_PIX_LINES;			// 0x0000 0010
+			volatile unsigned int CCDC_HD_VD_WID;			// 0x0000 000C
+			volatile unsigned int CCDC_PIX_LINES;			// 0x0000 0010
 
 			union
 			{
-				UVINT32 CCDC_HORZ_INFO;		// 0x0000 0014
+				volatile unsigned int CCDC_HORZ_INFO;		// 0x0000 0014
 				struct
 				{
-					UVINT32 nph				:15;
-					UVINT32 reserved0			:1;
-					UVINT32 sph				:15;
-					UVINT32 reserved1			:1;
+					volatile unsigned int nph				:15;
+					volatile unsigned int reserved0			:1;
+					volatile unsigned int sph				:15;
+					volatile unsigned int reserved1			:1;
 				}bit;
 			}ccdc_horz_info;
 
 			union
 			{
-				UVINT32 CCDC_VERT_START;	// 0x0000 0018
+				volatile unsigned int CCDC_VERT_START;	// 0x0000 0018
 				struct
 				{
-					UVINT32 slv1				:15;
-					UVINT32 reserved0			:1;
-					UVINT32 slv0				:15;
-					UVINT32 reserved1			:1;
+					volatile unsigned int slv1				:15;
+					volatile unsigned int reserved0			:1;
+					volatile unsigned int slv0				:15;
+					volatile unsigned int reserved1			:1;
 				}bit;
 			}ccdc_vert_start;
 		
 			union
 			{
-				UVINT32 CCDC_VERT_LINES;	// 0x0000 001C
+				volatile unsigned int CCDC_VERT_LINES;	// 0x0000 001C
 				struct
 				{
-					UVINT32 nlv				:15;
+					volatile unsigned int nlv				:15;
 				}bit;
 			}ccdc_vert_lines;
-			UVINT32 CCDC_CULLING;			// 0x0000 0020
+			volatile unsigned int CCDC_CULLING;			// 0x0000 0020
 
 			union
 			{
-				UVINT32 CCDC_HSIZE_OFF;		// 0x0000 0024
+				volatile unsigned int CCDC_HSIZE_OFF;		// 0x0000 0024
 				struct
 				{
-					UVINT32 lnofst				:16;
+					volatile unsigned int lnofst				:16;
 				}bit;
 			}ccdc_hsize_off;
 
-			UVINT32 CCDC_SDOFST;			// 0x0000 0028
-			UVINT32 CCDC_SDR_ADDR;			// 0x0000 002C
-			UVINT32 CCDC_CLAMP;			// 0x0000 0030
-			UVINT32 CCDC_DCSUB;			// 0x0000 0034
-			UVINT32 CCDC_COLPTN;			// 0x0000 0038
-			UVINT32 CCDC_BLKCMP;			// 0x0000 003C
-			UVINT32 CCDC_FPC;			// 0x0000 0040
-			UVINT32 CCDC_FPC_ADDR;			// 0x0000 0044
+			volatile unsigned int CCDC_SDOFST;			// 0x0000 0028
+			volatile unsigned int CCDC_SDR_ADDR;			// 0x0000 002C
+			volatile unsigned int CCDC_CLAMP;			// 0x0000 0030
+			volatile unsigned int CCDC_DCSUB;			// 0x0000 0034
+			volatile unsigned int CCDC_COLPTN;			// 0x0000 0038
+			volatile unsigned int CCDC_BLKCMP;			// 0x0000 003C
+			volatile unsigned int CCDC_FPC;			// 0x0000 0040
+			volatile unsigned int CCDC_FPC_ADDR;			// 0x0000 0044
 
 			union
 			{
-				UVINT32 CCDC_VDINT;		// 0x0000 0048
+				volatile unsigned int CCDC_VDINT;		// 0x0000 0048
 				struct
 				{
-					UVINT32 vdint1				:15;
-					UVINT32 reserved0			:1;
-					UVINT32 vdint0				:15;
+					volatile unsigned int vdint1				:15;
+					volatile unsigned int reserved0			:1;
+					volatile unsigned int vdint0				:15;
 				}bit;
 			}ccdc_vdint;
 
-			UVINT32 CCDC_ALAW;			// 0x0000 004C
-			UVINT32 CCDC_REC656IF;			// 0x0000 0050
+			volatile unsigned int CCDC_ALAW;			// 0x0000 004C
+			volatile unsigned int CCDC_REC656IF;			// 0x0000 0050
 
 			union
 			{
-				UVINT32 CCDC_CFG;		// 0x0000 0054 
+				volatile unsigned int CCDC_CFG;		// 0x0000 0054 
 				struct
 				{
-					UVINT32 reserved0			:5;
-					UVINT32 bw565				:1;
-					UVINT32 fidmd				:2;
-					UVINT32 wenlog				:1;
-					UVINT32 reserved1			:2;
-					UVINT32 y8pos				:1;
-					UVINT32 bswb				:1;
-					UVINT32 msbinvi				:1;
-					UVINT32 reserved2			:1;
-					UVINT32 vdlc				:1;
+					volatile unsigned int reserved0			:5;
+					volatile unsigned int bw565				:1;
+					volatile unsigned int fidmd				:2;
+					volatile unsigned int wenlog				:1;
+					volatile unsigned int reserved1			:2;
+					volatile unsigned int y8pos				:1;
+					volatile unsigned int bswb				:1;
+					volatile unsigned int msbinvi				:1;
+					volatile unsigned int reserved2			:1;
+					volatile unsigned int vdlc				:1;
 				}bit;
 			}ccdc_cfg;
 
-			UVINT32 CCDC_FMTCFG;			// 0x0000 0058
-			UVINT32 CCDC_FMT_HORZ;			// 0x0000 005C
-			UVINT32 CCDC_FMT_VERT;			// 0x0000 0060
-			UVINT32 CCDC_FMT_ADDRx;			// 0x0000 0064
-			UVINT32 CCDC_PRGEVEN0;			// 0x0000 0084
-			UVINT32 CCDC_PRGEVEN1;			// 0x0000 0088
-			UVINT32 CCDC_PRGODD0;			// 0x0000 008C
-			UVINT32 CCDC_PRGODD1;			// 0x0000 0090
-			UVINT32 CCDC_VP_OUT;			// 0x0000 0094 
-			UVINT32 CCDC_LSC_CONFIG;		// 0x0000 0098
-			UVINT32 CCDC_LSC_INITIAL;		// 0x0000 009C
-			UVINT32 CCDC_LSC_TABLE_BASE;		// 0x0000 00A0
-			UVINT32 CCDC_LSC_TABLE_OFFSET;		// 0x0000 00A4 
+			volatile unsigned int CCDC_FMTCFG;			// 0x0000 0058
+			volatile unsigned int CCDC_FMT_HORZ;			// 0x0000 005C
+			volatile unsigned int CCDC_FMT_VERT;			// 0x0000 0060
+			volatile unsigned int CCDC_FMT_ADDRx;			// 0x0000 0064
+			volatile unsigned int CCDC_PRGEVEN0;			// 0x0000 0084
+			volatile unsigned int CCDC_PRGEVEN1;			// 0x0000 0088
+			volatile unsigned int CCDC_PRGODD0;			// 0x0000 008C
+			volatile unsigned int CCDC_PRGODD1;			// 0x0000 0090
+			volatile unsigned int CCDC_VP_OUT;			// 0x0000 0094 
+			volatile unsigned int CCDC_LSC_CONFIG;		// 0x0000 0098
+			volatile unsigned int CCDC_LSC_INITIAL;		// 0x0000 009C
+			volatile unsigned int CCDC_LSC_TABLE_BASE;		// 0x0000 00A0
+			volatile unsigned int CCDC_LSC_TABLE_OFFSET;		// 0x0000 00A4 
 		}reg;
 	}isp_ccdc;
 	
@@ -481,7 +481,7 @@ typedef struct __isp_reg_bit_access
  * HIST_H_V_INFO      RW     32         0x0000 0040             0x480B CA40        Section 1.6.5.11
  */
 
-		UVINT32 ISP_HIST[((BADDR_ISP_H3A-BADDR_ISP_HIST)/4)];
+		volatile unsigned int ISP_HIST[((BADDR_ISP_H3A-BADDR_ISP_HIST)/4)];
 		
 	}isp_hist;
 
@@ -517,7 +517,7 @@ typedef struct __isp_reg_bit_access
  * H3A_AEWBUFST    RW     32    0x0000 005C 0x480B CC5C Section 1.6.6.24
  */
 
-		UVINT32 ISP_H3A[((BADDR_ISP_PREVIEW-BADDR_ISP_H3A)/4)];
+		volatile unsigned int ISP_H3A[((BADDR_ISP_PREVIEW-BADDR_ISP_H3A)/4)];
 		
 	}isp_h3a;
 
@@ -564,7 +564,7 @@ typedef struct __isp_reg_bit_access
  * PRV_CDC_THRx (1) RW 32      0x0000 0090 + (0x4 * x) 0x480B CE90 + (0x4 * x) Section 1.6.7.35
  */
 
-		UVINT32 ISP_PRV[((BADDR_ISP_RESIZER-BADDR_ISP_PREVIEW)/4)];
+		volatile unsigned int ISP_PRV[((BADDR_ISP_RESIZER-BADDR_ISP_PREVIEW)/4)];
 		
 	}isp_pview;
 
@@ -619,7 +619,7 @@ typedef struct __isp_reg_bit_access
  * RSZ_YENH       RW 32 0x0000 00A8 0x480B D0A8 Section 1.6.8.43
  */
 
-		UVINT32 ISP_RSZ[((BADDR_ISP_SBL-BADDR_ISP_RESIZER)/4)];
+		volatile unsigned int ISP_RSZ[((BADDR_ISP_SBL-BADDR_ISP_RESIZER)/4)];
 		
 	}isp_rsize;
 
@@ -686,7 +686,7 @@ typedef struct __isp_reg_bit_access
  * SBL_H3A_AEAWB_WR_1  R 32 0x0000 00D4 0x480B D2D4 Section 1.6.9.54
  * SBL_SDR_REQ_EXP    RW 32 0x0000 00F8 0x480B D2F8 Section 1.6.9.55
  */
-		UVINT32 ISP_SBL[((BADDR_ISP_SBL_END-BADDR_ISP_SBL)/4)];
+		volatile unsigned int ISP_SBL[((BADDR_ISP_SBL_END-BADDR_ISP_SBL)/4)];
 		
 	}isp_sbl;
 

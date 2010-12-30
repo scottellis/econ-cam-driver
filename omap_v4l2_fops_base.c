@@ -42,14 +42,14 @@
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	omap_v4l2_open	
  *  Parameter1	:	struct file *file
- *  Returns	:	INT32	- On sucess returns 0
+ *  Returns	:	int	- On sucess returns 0
  *  				- On Failure a negative number be returned
  *  Description	: 	perform open operation of v4l2 
  *  Comments	:  	
  ************************************************************************************************************/
-INT32 omap_v4l2_open(struct file *file)
+int omap_v4l2_open(struct file *file)
 {
-	INT32 err = 0;
+	int err = 0;
 	struct video_device *dev = video_devdata(file);
 	cam_data *cam;
 	int ret_val;
@@ -85,14 +85,14 @@ INT32 omap_v4l2_open(struct file *file)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	omap_v4l2_close
  *  Parameter1	:	struct file *file
- *  Returns	:	INT32	- On sucess returns 0
+ *  Returns	:	int	- On sucess returns 0
  *  				- On Failure a negative number be returned
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-INT32 omap_v4l2_close(struct file *file)
+int omap_v4l2_close(struct file *file)
 {
-	INT32 err = 0;
+	int err = 0;
 	int ret_val;
 
 	cam_data *cam;
@@ -123,9 +123,9 @@ INT32 omap_v4l2_close(struct file *file)
  *  
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	cam_get_pages
- *  Parameter1	:	UPINT32 vir_addr	- Virtual of available physical address available
+ *  Parameter1	:	unsigned int *vir_addr	- Virtual of available physical address available
  *  Parameter2	:	unsigned int size		- size of memory free and available
- *  Parameter3	:	UPINT32 phy_addr	- Physical address of memory available from the kernel
+ *  Parameter3	:	unsigned int *phy_addr	- Physical address of memory available from the kernel
  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
@@ -135,9 +135,9 @@ INT32 omap_v4l2_close(struct file *file)
  *  Description	: 	get the free memory available from the kernel.  				
  *  Comments	:  	
  ************************************************************************************************************/
-int cam_get_pages(UPINT32 vir_addr,unsigned int size,UPINT32 phy_addr)
+int cam_get_pages(unsigned int *vir_addr, unsigned int size, unsigned int *phy_addr)
 {
-	ULINT32 adr;
+	unsigned long adr;
 
 	*vir_addr	= (unsigned int)__get_free_pages(GFP_KERNEL |					\
 						GFP_DMA,get_order(size));
@@ -147,7 +147,7 @@ int cam_get_pages(UPINT32 vir_addr,unsigned int size,UPINT32 phy_addr)
 		return FAIL;
 	}
 
-        adr = (ULINT32)*vir_addr;
+        adr = (unsigned long)*vir_addr;
         size = PAGE_SIZE << (get_order(size));
 	for(;size > 0;)
 	{
@@ -201,20 +201,20 @@ int cam_free_pages(unsigned int addr, unsigned int bufsize)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	omap_v4l2_read
  *  Parameter1	:	struct file *file
- *  Parameter2	:	INT8 *buf
+ *  Parameter2	:	char *buf
  *  Parameter3	:	size_t count
  *  Parameter4	:	loff_t * ppos
- *  Returns	:	INT32	- On sucess returns 0
+ *  Returns	:	int	- On sucess returns 0
  *  				- On Failure a negative number be returned	
  *  Description	: 	perform read operation of camera driver
  *  Comments	:  	
  ************************************************************************************************************/
-INT32 omap_v4l2_read(struct file *file, INT8 *buf, size_t count, loff_t * ppos)
+int omap_v4l2_read(struct file *file, char *buf, size_t count, loff_t * ppos)
 {
 //	struct video_device *dev = video_devdata(file);
 	int ret_val;
 	cam_data *cam = NULL;
-	INT32 err;
+	int err;
 	unsigned int wait_event_ret_val	= DISABLE;
 
 
@@ -378,17 +378,17 @@ INT32 omap_v4l2_read(struct file *file, INT8 *buf, size_t count, loff_t * ppos)
  *  Name	:	omap_mmap
  *  Parameter1	:	struct file *file
  *  Parameter2	:	struct vm_area_struct *vma
- *  Returns	:	INT32	- On sucess returns 0
+ *  Returns	:	int	- On sucess returns 0
  *  				- On Failure a negative number be returned	
  *  Description	: 	perform mmap operation 
  *  Comments	:  	
  ************************************************************************************************************/
-INT32 omap_mmap(struct file *file, struct vm_area_struct *vma)
+int omap_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	#define VGA_IMAGE_SIZE	(640 *480 *2)
 
-	ULINT32 size;
-	INT32 res = DISABLE;
+	unsigned long size;
+	int res = DISABLE;
 
 	pr_debug("pgoff=0x%lx, start=0x%lx, end=0x%lx\n",vma->vm_pgoff, vma->vm_start, vma->vm_end);
 
@@ -425,12 +425,12 @@ INT32 omap_mmap(struct file *file, struct vm_area_struct *vma)
  *  Parameter1	:	struct file *file
  *  Parameter2	:	unsigned int ioctlnr
  *  Parameter3	:	void *arg
- *  Returns	:	LINT32	- On sucess returns 0
+ *  Returns	:	int	- On sucess returns 0
  *  				- On Failure a negative number be returned
  *  Description	: 	process ioctl commands here
  *  Comments	:  	
  ************************************************************************************************************/
-LINT32 omap_v4l2_do_ioctl(struct file *file,unsigned int ioctlnr, void *arg)
+long omap_v4l2_do_ioctl(struct file *file,unsigned int ioctlnr, void *arg)
 {
 	int ret_val;
 	cam_data *cam = NULL;
@@ -803,14 +803,14 @@ LINT32 omap_v4l2_do_ioctl(struct file *file,unsigned int ioctlnr, void *arg)
  *  Name	:	omap_v4l2_ioctl
  *  Parameter1	:	struct file *file
  *  Parameter2	:	unsigned int cmd
- *  Parameter3	:	ULINT32 arg
+ *  Parameter3	:	unsigned long arg
  *
- *  Returns	:	LINT32	- On sucess returns 0
+ *  Returns	:	int	- On sucess returns 0
  *  				- On Failure a negative number be returned
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-LINT32 omap_v4l2_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+long omap_v4l2_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	return video_usercopy(file, cmd, arg,omap_v4l2_do_ioctl);
 }

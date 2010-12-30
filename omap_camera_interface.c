@@ -38,7 +38,7 @@
 
 static u32 g_cam_interface;
 
-static int omap_pin_base_struct(cam_data *cam, UINT8 option)
+static int omap_pin_base_struct(cam_data *cam, unsigned char option)
 {
 	switch (option) {
 	case SET_ADDRESS:

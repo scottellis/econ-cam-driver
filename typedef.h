@@ -28,24 +28,5 @@
  *==========================================================================================================
  */
 
-typedef char			INT8;
-typedef unsigned char		UINT8;
-typedef signed char		SINT8;
-
-typedef char*			PINT8;
-typedef int			INT32;
-/* typedef unsigned int		UINT32; */
-
-
-typedef int*			PINT32;
-typedef unsigned int*		UPINT32;
-
-typedef volatile unsigned int	UVINT32;
-
-typedef long			LINT32;
-typedef unsigned long		ULINT32;
-
-typedef short			INT16;
-typedef volatile unsigned short	UVINT16;
-
+/* typedef char			INT8; */
 

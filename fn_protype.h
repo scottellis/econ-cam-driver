@@ -32,10 +32,9 @@
 /*
  * isp.c
  */
-irqreturn_t omap34xx_isp_isr(INT32 irq,void *_isp);
+irqreturn_t omap34xx_isp_isr(int irq, void *_isp);
 int init_cam_isp_ccdc(cam_data *cam);
 int exit_cam_isp_ccdc(cam_data *cam);
-/* int isp_set_xclk(cam_data *cam,unsigned int xclk, UINT8 xclksel, UPINT32 current_xclk); */
 int isp_reset(cam_data *cam);
 int isp_configure(cam_data *cam);
 int enable_ccdc(cam_data *cam);
@@ -51,7 +50,7 @@ int disable_isp_irq0(cam_data *cam);
 /*
  * v4l2_driver_base.c
  */
-int v4l2_base_struct(cam_data **cam, UINT8 option);
+int v4l2_base_struct(cam_data **cam, unsigned char option);
 int init_v4l2_base_struct(cam_data *cam);
 
 /*
@@ -83,16 +82,13 @@ int exit_cam_interface(cam_data *cam);
 /*
  * omap_v4l2_fops_base.c
  */
-INT32 omap_v4l2_open(struct file *file);
-INT32 omap_v4l2_close(struct file *file);
-INT32 omap_v4l2_read(struct file *file, INT8 *buf, size_t count, loff_t * ppos);
-INT32 omap_mmap(struct file *file, struct vm_area_struct *vma);
-LINT32 omap_v4l2_do_ioctl(struct file *file, unsigned int ioctlnr, void *arg);
-LINT32 omap_v4l2_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+int omap_v4l2_open(struct file *file);
+int omap_v4l2_close(struct file *file);
+int omap_v4l2_read(struct file *file, char *buf, size_t count, loff_t * ppos);
+int omap_mmap(struct file *file, struct vm_area_struct *vma);
+long omap_v4l2_do_ioctl(struct file *file, unsigned int ioctlnr, void *arg);
+long omap_v4l2_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
-/*
- * gendral
- */
 
 /*
  * ov3640.c
@@ -113,12 +109,12 @@ int omap_v4l2_req_buf(cam_data *cam, struct v4l2_requestbuffers *req);
 int omap_v4l2_query_buf(cam_data *cam, struct v4l2_buffer *buf);
 int omap_v4l2_queue_buf(cam_data *cam, struct v4l2_buffer *buf);
 int omap_v4l2_dqueue_buf(cam_data *cam, struct v4l2_buffer *buf);
-int omap_v4l2_stream_on(cam_data *cam, INT32 *type);
-int omap_v4l2_stream_off(cam_data *cam, INT32 *type);
+int omap_v4l2_stream_on(cam_data *cam, int *type);
+int omap_v4l2_stream_off(cam_data *cam, int *type);
 int omap_v4l2_enum_fmt(cam_data *cam, struct v4l2_fmtdesc *fmt);
 
 /*
  * exit_module.c
  */
-INT32 isp_remove(struct platform_device *pdev);
+int isp_remove(struct platform_device *pdev);
 

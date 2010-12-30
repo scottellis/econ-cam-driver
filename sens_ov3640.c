@@ -211,7 +211,7 @@ int ov3640_init_config(cam_data *cam)
  ************************************************************************************************************/
 int configure_dimention_change(cam_data *cam)
 {
-	static INT32 width,height,old_logic_case;
+	static int width,height,old_logic_case;
 	unsigned int logic_case;
 
 	if(	(cam->cam_sensor.fmt.fmt.pix.width <= MODE_XGA_WIDTH) && 	\
@@ -353,14 +353,14 @@ int configure_dimention_change(cam_data *cam)
  ************************************************************************************************************/
 int ov3640_change_dim_config(cam_data *cam)
 {
-	static INT32 old_width, old_height;
+	static int old_width, old_height;
 	unsigned int width, height, bfw_count = 2;
 	int ret_val;
 
-	UINT8 y_start = 2;
-	UINT8 x_start = 4;
+	unsigned char y_start = 2;
+	unsigned char x_start = 4;
 #if 0 
-	static INT32 focus_box	= ENABLE;
+	static int focus_box	= ENABLE;
 	if(focus_box == ENABLE)
 	{
 		ov3640_write_reg(0x3F00 ,0x04);
@@ -533,7 +533,7 @@ int ov3640_brightness(cam_data *cam)
 	{
 		case GET_DATA_FRM_SENSOR:
 		{
-			UINT8 reg_value;
+			unsigned char reg_value;
 			ov3640_read_reg(0x3354,&reg_value);
 			if(reg_value == 0x08)
 			{
@@ -615,7 +615,7 @@ int ov3640_exposure(cam_data *cam)
 	{
 		case GET_DATA_FRM_SENSOR:
 		{
-			UINT8 reg_value;
+			unsigned char reg_value;
 			ov3640_read_reg(0x3018,&reg_value);
 			cam->ctrl.value	= reg_value -0x80;
 			cam->ctrl.value	= (cam->ctrl.value)>40?40:		\
@@ -686,7 +686,7 @@ int ov3640_sharpness(cam_data *cam)
 	{
 		case GET_DATA_FRM_SENSOR:
 		{
-			UINT8 reg_value;
+			unsigned char reg_value;
 			ov3640_read_reg(0x332d,&reg_value);
 			cam->ctrl.value	= reg_value -0x45;
 			cam->ctrl.value	= (cam->ctrl.value)>3?3:		\
@@ -861,7 +861,7 @@ int ov3640_saturation(cam_data *cam)
 	{
 		case GET_DATA_FRM_SENSOR:
 		{
-			UINT8 reg_value;
+			unsigned char reg_value;
 			ov3640_read_reg(0x3358,&reg_value);
 			cam->ctrl.value	= reg_value - 0x30;
 			cam->ctrl.value	= (cam->ctrl.value)>48?48:		\
@@ -930,7 +930,7 @@ int ov3640_contrast(cam_data *cam)
 	{
 		case GET_DATA_FRM_SENSOR:
 		{
-			UINT8 reg_value;
+			unsigned char reg_value;
 			ov3640_read_reg(0x335c,&reg_value);
 			cam->ctrl.value	= reg_value - 0x20;
 			cam->ctrl.value	= (cam->ctrl.value)>12?12:		\
@@ -974,7 +974,7 @@ int ov3640_contrast(cam_data *cam)
  *  
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_10
  *  Name	:	planckian_locus_lookuptable
- *  Parameter1	:	INT32 value	- Temperature of the source.
+ *  Parameter1	:	int value	- Temperature of the source.
  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
@@ -986,14 +986,14 @@ int ov3640_contrast(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-int planckian_locus_lookuptable(INT32 value)
+int planckian_locus_lookuptable(int value)
 {
 	typedef struct _aw_temp_gain_adj
 	{
 		unsigned int temp;
-		UINT8 r;
-		UINT8 g;
-		UINT8 b;
+		unsigned char r;
+		unsigned char g;
+		unsigned char b;
 	}aw_gain_adj;
 
 	aw_gain_adj temp_aw_gain[]	=	{				\
@@ -1107,7 +1107,7 @@ int ov3640_white_balance(cam_data *cam)
 
 int ov3640_vertical_flip(cam_data *cam)
 {
-	UINT8 reg_value;
+	unsigned char reg_value;
 	ov3640_read_reg(0x307c,&reg_value);
 
 	switch(cam->cam_sensor.cmd_to_sensor)
@@ -1172,7 +1172,7 @@ int ov3640_vertical_flip(cam_data *cam)
 
 int ov3640_horizontal_mirror(cam_data *cam)
 {
-	UINT8 reg_value;
+	unsigned char reg_value;
 	ov3640_read_reg(0x3090,&reg_value);
 	switch(cam->cam_sensor.cmd_to_sensor)
 	{
@@ -1243,7 +1243,7 @@ int ov3640_antishake_firmware_ctrl(cam_data *cam)
 	{	
 		case GET_DATA_FRM_SENSOR:
 		{
-			UINT8 reg_value	= DISABLE;
+			unsigned char reg_value	= DISABLE;
 			switch(cam->ctrl.id)
 			{
 				case V4L2_SENS_ANTISHAKE_STATUS:
@@ -8211,7 +8211,7 @@ int ov3640_frame_rate_ctrl(cam_data *cam)
 #if 0
 	unsigned int clk_set		= DISABLE;
 #endif
-	UINT8 regval_3011	= DISABLE;
+	unsigned char regval_3011	= DISABLE;
 	unsigned int fps		= DISABLE;
 	unsigned int fps_need		= DISABLE;
 
@@ -8341,7 +8341,7 @@ int ov3640_sens_strobe(cam_data *cam)
 int ov3640_focus(cam_data *cam)
 {
 	af_status reg_data;
-	UINT8 reg_value;
+	unsigned char reg_value;
 	switch(cam->cam_sensor.cmd_to_sensor)
 	{
 		case GET_DATA_FRM_SENSOR:
@@ -8547,11 +8547,11 @@ int ov3640_focus(cam_data *cam)
  *  
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_17
  *  Name	:	ov3640_i2c_client_xfer
- *  Parameter1	:	INT32 addr	- Slave address (7-bit) address
- *  Parameter2	:	PINT8 reg	- Ov3640 Register address base address
- *  Parameter3	:	PINT8 buf	- Ov3640 Register data base address
- *  Parameter4	:	INT32 num	- Number of data need to read/write in i2c transation
- *  Parameter5	:	INT32 tran_flag	- 0- Write,1-read
+ *  Parameter1	:	int addr	- Slave address (7-bit) address
+ *  Parameter2	:	char *reg	- Ov3640 Register address base address
+ *  Parameter3	:	char *buf	- Ov3640 Register data base address
+ *  Parameter4	:	int num	- Number of data need to read/write in i2c transation
+ *  Parameter5	:	int tran_flag	- 0- Write,1-read
  *
  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
@@ -8564,14 +8564,13 @@ int ov3640_focus(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-int ov3640_i2c_client_xfer(	INT32 addr, PINT8 reg, PINT8 buf, INT32 num,	\
-				INT32 tran_flag)
+int ov3640_i2c_client_xfer(int addr, char *reg, char *buf, int num, int tran_flag)
 {
 	struct i2c_msg msg[2];
 	int ret_val;
-	INT32 ret;
-	cam_data *cam	= NULL;
-	UINT8 reg_addr_data[3];
+	int ret;
+	cam_data *cam = NULL;
+	unsigned char reg_addr_data[3];
 
 	ret_val	= v4l2_base_struct(&cam,GET_ADDRESS);
 	if(CHECK_IN_FAIL_LIMIT(ret_val))
@@ -8657,7 +8656,7 @@ int ov3640_i2c_client_xfer(	INT32 addr, PINT8 reg, PINT8 buf, INT32 num,	\
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_18	
  *  Name	:	ov3640_write_reg
  *  Parameter1	:	unsigned int reg_address	- Ov3640 register address
- *  Parameter2	:	UINT8 reg_data		- Ov3640 register data
+ *  Parameter2	:	unsigned char reg_data		- Ov3640 register data
  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
@@ -8752,7 +8751,7 @@ int ov3640_read_reg(unsigned int reg_address, unsigned char *reg_data)
  *  Description	: 	Configure the gpio levels for ov3640 driver
  *  Comments	:  	
  ************************************************************************************************************/
-static INT32 __init ov3640_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int __init ov3640_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 #define OV3640_RESET_GPIO	98
 #define OV3640_STANDBY_GPIO	167
@@ -8829,7 +8828,7 @@ static INT32 __init ov3640_probe(struct i2c_client *client, const struct i2c_dev
  *  Comments	:  	
  ************************************************************************************************************/
 
-static INT32 __exit ov3640_remove(struct i2c_client *client)
+static int __exit ov3640_remove(struct i2c_client *client)
 {
 	if (!client->adapter)
 	{
@@ -9079,7 +9078,7 @@ int ov3640_init(cam_data *cam)
 int ov3640_detect_device(cam_data *cam)
 {
 	int ret_val;
-	UINT8 reg_data_aw	= 0x00;
+	unsigned char reg_data_aw	= 0x00;
 
 	ret_val	= ov3640_read_reg(0x300a,&reg_data_aw);
 	if(CHECK_IN_FAIL_LIMIT(ret_val))
@@ -9199,10 +9198,10 @@ int chk_pix_format_support(cam_data *cam)
 		default:
 		{
 			printk(KERN_INFO "chk_pix_format_support Searching for %c%c%c%c\n",				\
-							(INT8)(0xFF&(cam->cam_sensor.fmt.fmt.pix.pixelformat)),	\
-							(INT8)(0xFF&(cam->cam_sensor.fmt.fmt.pix.pixelformat>>8)),	\
-							(INT8)(0xFF&(cam->cam_sensor.fmt.fmt.pix.pixelformat>>16)),	\
-							(INT8)(0xFF&(cam->cam_sensor.fmt.fmt.pix.pixelformat>>24)));
+							(char)(0xFF&(cam->cam_sensor.fmt.fmt.pix.pixelformat)),	\
+							(char)(0xFF&(cam->cam_sensor.fmt.fmt.pix.pixelformat>>8)),	\
+							(char)(0xFF&(cam->cam_sensor.fmt.fmt.pix.pixelformat>>16)),	\
+							(char)(0xFF&(cam->cam_sensor.fmt.fmt.pix.pixelformat>>24)));
 
 			TRACE_ERR_AND_RET(FAIL);
 		}
@@ -9268,10 +9267,10 @@ int ov3640_query_formats(cam_data *cam)
 				default:
 				{
 					printk(KERN_INFO "chk_pix_format_support Searching for %c%c%c%c\n",		\
-							(INT8)(0xFF&(cam->cam_sensor.qfmt.fmt.pix.pixelformat)),	\
-							(INT8)(0xFF&(cam->cam_sensor.qfmt.fmt.pix.pixelformat>>8)),	\
-							(INT8)(0xFF&(cam->cam_sensor.qfmt.fmt.pix.pixelformat>>16)),	\
-							(INT8)(0xFF&(cam->cam_sensor.qfmt.fmt.pix.pixelformat>>24)));
+							(char)(0xFF&(cam->cam_sensor.qfmt.fmt.pix.pixelformat)),	\
+							(char)(0xFF&(cam->cam_sensor.qfmt.fmt.pix.pixelformat>>8)),	\
+							(char)(0xFF&(cam->cam_sensor.qfmt.fmt.pix.pixelformat>>16)),	\
+							(char)(0xFF&(cam->cam_sensor.qfmt.fmt.pix.pixelformat>>24)));
 
 					TRACE_ERR_AND_RET(FAIL);
 				}

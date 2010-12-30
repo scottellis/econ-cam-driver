@@ -398,7 +398,7 @@ int omap_v4l2_req_buf(cam_data *cam,struct v4l2_requestbuffers *req)
 	for(i = 0;i < (req->count+1);i++)
 	{
 		if (get_free_phy_mem(cam->capture.v2f.fmt.pix.sizeimage,
-				(UPINT32)&cam->capture.frame[i].buffer.m.offset,
+				(unsigned int *)&cam->capture.frame[i].buffer.m.offset,
 				NULL))
 			break;
 
@@ -509,7 +509,7 @@ int omap_v4l2_queue_buf(cam_data *cam,struct v4l2_buffer *buf)
 int omap_v4l2_dqueue_buf(cam_data *cam,struct v4l2_buffer *buf)
 {
 	unsigned int wait_event_ret_val;
-	INT32 index		= -1;
+	int index		= -1;
 	struct timeval timestamp;
 	unsigned int i		= DISABLE;
 	memset(&timestamp,DISABLE,sizeof(struct timeval));
@@ -577,7 +577,7 @@ int omap_v4l2_dqueue_buf(cam_data *cam,struct v4l2_buffer *buf)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	omap_v4l2_stream_on
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Parameter2	:	INT32 *type
+ *  Parameter2	:	int *type
  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
@@ -587,7 +587,7 @@ int omap_v4l2_dqueue_buf(cam_data *cam,struct v4l2_buffer *buf)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-int omap_v4l2_stream_on(cam_data *cam,INT32 *type)
+int omap_v4l2_stream_on(cam_data *cam,int *type)
 {
 	int ret_val;
 	if(cam->task.bit.capture	== ENABLE)
@@ -642,7 +642,7 @@ int omap_v4l2_stream_on(cam_data *cam,INT32 *type)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	omap_v4l2_stream_off
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Parameter2	:	INT32 *type
+ *  Parameter2	:	int *type
  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
@@ -652,7 +652,7 @@ int omap_v4l2_stream_on(cam_data *cam,INT32 *type)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-int omap_v4l2_stream_off(cam_data *cam,INT32 *type)
+int omap_v4l2_stream_off(cam_data *cam,int *type)
 {
 	int	ret_val;
 	unsigned int	i;

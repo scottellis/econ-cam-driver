@@ -70,25 +70,25 @@
 
 struct pad_config_value
 {
-	UVINT16 MUXMODE			:3;
-	UVINT16 PULLUDENABLE		:1;
- 	UVINT16 PULLTYPESELECT		:1;
-	UVINT16 RESERVED		:3;
-	UVINT16 INPUTENABLE		:1;
-	UVINT16 OFFENABLE		:1;
-	UVINT16 OFFOUTENABLE		:1;
-	UVINT16 OFFOUTVALUE		:1;
-	UVINT16 OFFPULLUDENABLE		:1;
-	UVINT16 OFFPULLTYPE		:1;
-	UVINT16 WAKEUPENABLE		:1;
-	UVINT16 WAKEUPEVENT		:1;
+	volatile unsigned short MUXMODE			:3;
+	volatile unsigned short PULLUDENABLE		:1;
+ 	volatile unsigned short PULLTYPESELECT		:1;
+	volatile unsigned short RESERVED		:3;
+	volatile unsigned short INPUTENABLE		:1;
+	volatile unsigned short OFFENABLE		:1;
+	volatile unsigned short OFFOUTENABLE		:1;
+	volatile unsigned short OFFOUTVALUE		:1;
+	volatile unsigned short OFFPULLUDENABLE		:1;
+	volatile unsigned short OFFPULLTYPE		:1;
+	volatile unsigned short WAKEUPENABLE		:1;
+	volatile unsigned short WAKEUPEVENT		:1;
 };
 
 typedef struct cam_interface
 {
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_HS;
+		volatile unsigned int CONTROL_PADCONF_CAM_HS;
 		struct
 		{
 			struct pad_config_value cam_hs;
@@ -97,7 +97,7 @@ typedef struct cam_interface
 	}bit_hs_vs;
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_XCLKA;
+		volatile unsigned int CONTROL_PADCONF_CAM_XCLKA;
 		struct
 		{
 			struct pad_config_value cam_xclka;
@@ -106,7 +106,7 @@ typedef struct cam_interface
 	}bit_xclka_pclk;
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_FLD;
+		volatile unsigned int CONTROL_PADCONF_CAM_FLD;
 		struct
 		{
 			struct pad_config_value cam_fld;
@@ -115,7 +115,7 @@ typedef struct cam_interface
 	}bit_fld_d0;
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_D1;
+		volatile unsigned int CONTROL_PADCONF_CAM_D1;
 		struct
 		{
 			struct pad_config_value cam_d1;
@@ -125,7 +125,7 @@ typedef struct cam_interface
 	}bit_d1_d2;
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_D3;
+		volatile unsigned int CONTROL_PADCONF_CAM_D3;
 		struct
 		{
 			struct pad_config_value cam_d3;
@@ -135,7 +135,7 @@ typedef struct cam_interface
 	}bit_d3_d4;
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_D5;
+		volatile unsigned int CONTROL_PADCONF_CAM_D5;
 		struct
 		{
 			struct pad_config_value cam_d5;
@@ -145,7 +145,7 @@ typedef struct cam_interface
 	}bit_d5_d6;
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_D7;
+		volatile unsigned int CONTROL_PADCONF_CAM_D7;
 		struct
 		{
 			struct pad_config_value cam_d7;
@@ -155,7 +155,7 @@ typedef struct cam_interface
 	}bit_d7_d8;
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_D9;
+		volatile unsigned int CONTROL_PADCONF_CAM_D9;
 		struct
 		{
 			struct pad_config_value cam_d9;
@@ -165,7 +165,7 @@ typedef struct cam_interface
 	}bit_d9_d10;
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_D11;
+		volatile unsigned int CONTROL_PADCONF_CAM_D11;
 		struct
 		{
 			struct pad_config_value cam_d11;
@@ -176,7 +176,7 @@ typedef struct cam_interface
 
 	union
 	{
-		UVINT32 CONTROL_PADCONF_CAM_WEN;
+		volatile unsigned int CONTROL_PADCONF_CAM_WEN;
 		struct
 		{
 			struct pad_config_value cam_wen;
@@ -185,11 +185,11 @@ typedef struct cam_interface
 
 	}bit_wen_strobe;
 
-	UVINT32	RESERVED[(REG_CONTROL_PADCONF_I2C1_SDA-REG_CONTROL_PADCONF_CAM_WEN)/4];
+	volatile unsigned int	RESERVED[(REG_CONTROL_PADCONF_I2C1_SDA-REG_CONTROL_PADCONF_CAM_WEN)/4];
 
 	union
 	{
-		UVINT32 CONTROL_PADCONF_I2C2_SDA;
+		volatile unsigned int CONTROL_PADCONF_I2C2_SDA;
 		struct
 		{
 			struct pad_config_value i2c2_sda;
@@ -200,7 +200,7 @@ typedef struct cam_interface
 
 	union
 	{
-		UVINT32 CONTROL_PADCONF_I2C3_SDA;
+		volatile unsigned int CONTROL_PADCONF_I2C3_SDA;
 		struct
 		{
 			struct pad_config_value i2c3_sda;

@@ -56,11 +56,11 @@ typedef struct __cam_base_data
 	struct v4l2_input 			vinp;
 	union
 	{
-		UINT8			task_state;
+		unsigned char			task_state;
 		struct
 		{
-			UINT8			still	:1;
-			UINT8			capture	:1;
+			unsigned char			still	:1;
+			unsigned char			capture	:1;
 		}bit;
 	}task;
 
@@ -73,9 +73,9 @@ typedef struct __cam_base_data
 		int				available_buf;		// This will represet the Number of buffer
 									// chain can be formed in the qbuf - dqbuf process
 
-		INT32				using_buf;		// This will represet the current buffer 
+		int				using_buf;		// This will represet the current buffer 
 									// used by ccdc unit
-		INT32				valid_buf;		// This will mention the current valid buffer	
+		int				valid_buf;		// This will mention the current valid buffer	
 		unsigned long long int		buffer_sequence;	// Total number of effective buffer delivered be
 									// available in this byte.
 		wait_queue_head_t 		capture_frame_complete;
@@ -93,7 +93,7 @@ typedef struct __cam_base_data
 
 	struct
 	{
-		UINT8				wait_queue_head_t_dma_frame_complete_still;
+		unsigned char				wait_queue_head_t_dma_frame_complete_still;
 
 		wait_queue_head_t 		dma_frame_complete_still;
 		unsigned int				frame_count;
@@ -118,14 +118,14 @@ typedef struct __cam_base_data
 	struct resource				*mem;
 	unsigned int					irq;
 
-	UINT8					clk_enable;
+	unsigned char					clk_enable;
 	struct clk 				*cam_mclk;
 	struct clk 				*cam_ick;
 	
 /*
  * Board specific function callbacks
  */
-	int (*modify_mclk_to_sensor)	(struct __cam_base_data *cam,unsigned int clk_need,UPINT32 clk_set); 
+	int (*modify_mclk_to_sensor) (struct __cam_base_data *cam, unsigned int clk_need, unsigned int *clk_set); 
 	
 
 /*
@@ -151,7 +151,7 @@ typedef struct __cam_base_data
 		unsigned int total_frm_interval_support;
 		struct v4l2_frmivalenum frm_interval_support[MACRO_MAX_DISCREATE_FROMAT_SUPPORT],*frame_interval_frm_user;
 
-		UINT8	cmd_to_sensor;
+		unsigned char	cmd_to_sensor;
 		struct i2c_client 			*client;
 
 		int (*find_device) 			(struct __cam_base_data *cam); 
@@ -170,7 +170,7 @@ typedef struct __cam_base_data
 		int (*h_mirror) 			(struct __cam_base_data *cam);
 		int (*sharpness) 			(struct __cam_base_data *cam);
 
-		UINT8	sens_strobe_en;
+		unsigned char	sens_strobe_en;
 		int (*sens_strobe) 			(struct __cam_base_data *cam);
 
 		int (*auto_focus_init) 		(struct __cam_base_data *cam);
@@ -200,7 +200,7 @@ typedef struct __cam_base_data
 
 	struct _flash_driver
 	{
-		UINT8 enable;
+		unsigned char enable;
 		struct i2c_driver 			i2c;
 		struct i2c_client 			*client;
 
