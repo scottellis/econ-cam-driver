@@ -142,7 +142,7 @@ static int init_omap_hwr(cam_data *cam)
 
 static int isp_probe_late_init(cam_data *cam)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	INT32 ret;
 
 	ret_val	= init_v4l2_base_struct(cam);
@@ -221,7 +221,7 @@ static int isp_probe_late_init(cam_data *cam)
 
 static int isp_probe(struct platform_device *pdev)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	cam_data *cam;
 
 	ret_val	= v4l2_base_struct(&cam, GET_ADDRESS);
@@ -242,7 +242,7 @@ static int isp_probe(struct platform_device *pdev)
 
 static __init int cam_driver_init(void)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	cam_data *cam;
 
 	printk(KERN_INFO "Driver Module info : "MODULE_NAME "\n");

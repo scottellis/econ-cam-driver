@@ -36,7 +36,7 @@
 #include "fn_protype.h"
 #include "sens_ov3640.h"
 
-static UINT32 cam_mclk	= 24000000;
+static unsigned int cam_mclk = 24000000;
 module_param(cam_mclk,int, 0444);
 
 /************************************************************************************************************
@@ -44,16 +44,16 @@ module_param(cam_mclk,int, 0444);
  *  MODULE TYPE	:	ISR ROUTINE				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	omap34xx_isp_isr	
  *  Parameter1	:	INT32 irq
- *  Parameter2	:	PINT0 _cam	- private data number
+ *  Parameter2	:	void *_cam	- private data number
  *  Returns	:	irq - handled information
  *  Description	: 	interrupt service routine 
  *  Comments	:  	
  ************************************************************************************************************/
 
-irqreturn_t omap34xx_isp_isr(INT32 irq,PINT0 _cam)
+irqreturn_t omap34xx_isp_isr(INT32 irq, void *_cam)
 {
 	cam_data *cam	= _cam;
-	FNRESLT ret_val;
+	int ret_val;
 
 	if(cam->isp->isp_main.reg.isp_irq0status.bit.ccdc_vd0_irq			== ENABLED)
 	{
@@ -210,7 +210,7 @@ static int isp_set_xclk(cam_data *cam, u32 xclk, u8 xclksel, u32 *current_xclk)
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	option		- command to perform 
  *  
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -221,7 +221,7 @@ static int isp_set_xclk(cam_data *cam, u32 xclk, u8 xclksel, u32 *current_xclk)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT mclk_to_sensor(cam_data *cam, UINT32 xclk, UPINT32 clk_set)
+int mclk_to_sensor(cam_data *cam, unsigned int xclk, UPINT32 clk_set)
 {
 	return isp_set_xclk(cam, xclk, 0, clk_set);
 }
@@ -231,14 +231,14 @@ FNRESLT mclk_to_sensor(cam_data *cam, UINT32 xclk, UPINT32 clk_set)
  */
 static int omap_isp_base_struct(cam_data *cam, u8 option)
 {
-	static UINT32 g_cam_isp;
+	static unsigned int g_cam_isp;
 
 	if (!cam)
 		return -EINVAL;
 
 	switch (option) {
 	case SET_ADDRESS:
-		g_cam_isp = (UINT32)cam->pin;			
+		g_cam_isp = (unsigned int)cam->pin;			
 		break;
 	
 	case GET_ADDRESS:
@@ -276,7 +276,7 @@ static int omap_isp_base_struct(cam_data *cam, u8 option)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -286,9 +286,9 @@ static int omap_isp_base_struct(cam_data *cam, u8 option)
  *  Description	: 	reset the isp and ccdc interface
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT isp_reset(cam_data *cam)
+int isp_reset(cam_data *cam)
 {
-	UINT32 time_out	= 10;
+	unsigned int time_out	= 10;
 	if(cam == NULL)
 	{
 		TRACE_ERR_AND_RET(FAIL);
@@ -329,7 +329,7 @@ FNRESLT isp_reset(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	program_dummy_isp_sdram_addr
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -340,7 +340,7 @@ FNRESLT isp_reset(cam_data *cam)
  *  Comments	:
  ************************************************************************************************************/
 
-FNRESLT program_dummy_isp_sdram_addr(cam_data *cam)
+int program_dummy_isp_sdram_addr(cam_data *cam)
 {
 	if(cam->capture.available_buf	<= DISABLE)
 	{
@@ -355,7 +355,7 @@ FNRESLT program_dummy_isp_sdram_addr(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -365,19 +365,19 @@ FNRESLT program_dummy_isp_sdram_addr(cam_data *cam)
  *  Description	: 	program the ccdc sdram address.
  *  Comments	:  	In the programed sdram address the new frame from the sensor be filled.
  ************************************************************************************************************/
-FNRESLT isp_prg_sdram_addr(cam_data *cam)
+int isp_prg_sdram_addr(cam_data *cam)
 {
 	INT32	i;
-	UINT32	load_address_base_index	= DISABLE;
+	unsigned int	load_address_base_index	= DISABLE;
 	static struct timeval timestamp;
-	UINT32	dummy_count	= DISABLE;
-	UINT32	valid_buf	= DISABLE;
+	unsigned int	dummy_count	= DISABLE;
+	unsigned int	valid_buf	= DISABLE;
 	struct tm timecode;
 
 #ifndef CONFIG_CTRL_FRAME_RATE_FRM_SENSOR
-	static UINT32 frame_skip_count;
-	static UINT32 capture_frame_rate;
-	static UINT32 current_fps	= SENS_MAX_FPS;
+	static unsigned int frame_skip_count;
+	static unsigned int capture_frame_rate;
+	static unsigned int current_fps	= SENS_MAX_FPS;
 	static struct timeval timestamp_rec;
 #endif
 
@@ -489,13 +489,13 @@ FNRESLT isp_prg_sdram_addr(cam_data *cam)
 }
 
 
-FNRESLT disable_isp_irq0(cam_data *cam)
+int disable_isp_irq0(cam_data *cam)
 {
 	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE	= DISABLE;
 	return SUCCESS;
 }
 
-FNRESLT isp_configure(cam_data *cam)
+int isp_configure(cam_data *cam)
 {
 	if(cam == NULL)
 	{
@@ -544,7 +544,7 @@ FNRESLT isp_configure(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -554,7 +554,7 @@ FNRESLT isp_configure(cam_data *cam)
  *  Description	: 	After configuration isp irq0 is enabled
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT enable_isp_irq0(cam_data *cam)
+int enable_isp_irq0(cam_data *cam)
 {
 	cam->isp->isp_ccdc.reg.ccdc_vdint.bit.vdint0		= cam->capture.v2f.fmt.pix.height -1;
 	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE	= DISABLE;
@@ -567,7 +567,7 @@ FNRESLT enable_isp_irq0(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -577,7 +577,7 @@ FNRESLT enable_isp_irq0(cam_data *cam)
  *  Description	: 	enable the ccdc unit.
  *  Comments	:  	Once ccdc unit is enabled it will copy the frame into programmed sdram address.
  ************************************************************************************************************/
-FNRESLT enable_ccdc(cam_data *cam)
+int enable_ccdc(cam_data *cam)
 {
 	if(cam == NULL)
 	{
@@ -592,7 +592,7 @@ FNRESLT enable_ccdc(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	disable_ccdc
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -602,7 +602,7 @@ FNRESLT enable_ccdc(cam_data *cam)
  *  Description	: 	disable ccdc unit
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT disable_ccdc(cam_data *cam)
+int disable_ccdc(cam_data *cam)
 {
 	if(cam == NULL)
 	{
@@ -617,7 +617,7 @@ FNRESLT disable_ccdc(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
  *  Name	:	init_cam_isp_ccdc
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
-  *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 

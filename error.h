@@ -129,8 +129,8 @@ enum __error_base_macro
 	SPECIAL_ERROR_END	= 0xFFFFFFFF,
 };
 
-#define CHECK_IN_SUCCESS_LIMIT(x)			((x >= (FNRESLT)APP_BASE_SUC_START) && (x <= (FNRESLT)DRI_BASE_SUC_END))
-#define CHECK_IN_FAIL_LIMIT(x)				((x >= (FNRESLT)DRI_BASE_ERR_START ) && (x <= (FNRESLT)SPECIAL_ERROR_END))
+#define CHECK_IN_SUCCESS_LIMIT(x)			((x >= (int)APP_BASE_SUC_START) && (x <= (int)DRI_BASE_SUC_END))
+#define CHECK_IN_FAIL_LIMIT(x)				((x >= (int)DRI_BASE_ERR_START ) && (x <= (int)SPECIAL_ERROR_END))
 
 enum __error_base
 {

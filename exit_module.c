@@ -41,7 +41,7 @@
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	all_clk_disable	
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -50,7 +50,7 @@
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT all_clk_disable(cam_data *cam)
+int all_clk_disable(cam_data *cam)
 {
 	if(!(IS_ERR(cam->cam_mclk)))
 	{
@@ -70,7 +70,7 @@ FNRESLT all_clk_disable(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	all_clk_unregister
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -79,7 +79,7 @@ FNRESLT all_clk_disable(cam_data *cam)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT all_clk_unregister(cam_data *cam)
+int all_clk_unregister(cam_data *cam)
 {
 	if(!(IS_ERR(cam->cam_ick)))
 	{
@@ -98,7 +98,7 @@ FNRESLT all_clk_unregister(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	free_all_irq
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -107,7 +107,7 @@ FNRESLT all_clk_unregister(cam_data *cam)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT free_all_irq(cam_data *cam)
+int free_all_irq(cam_data *cam)
 {
 	free_irq(cam->irq,cam);
 	return SUCCESS;
@@ -137,7 +137,7 @@ static int exit_omap_hwr(cam_data *cam)
 INT32 isp_remove(struct platform_device *pdev)
 {
 
-	FNRESLT ret_val;
+	int ret_val;
 	cam_data *cam;
 /*
  * register the camera base pointer
@@ -215,7 +215,7 @@ INT32 isp_remove(struct platform_device *pdev)
 
 static void __exit omap_v4l2_camera_driver_exit(void)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	cam_data *cam;
 
 /*

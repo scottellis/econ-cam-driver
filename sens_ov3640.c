@@ -42,7 +42,7 @@
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_01	
  *  Name	:	ov3640_init_config
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -52,7 +52,7 @@
  *  Description	:	configure the ov3640 sensor to its default register settings mode	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT ov3640_init_config(cam_data *cam)
+int ov3640_init_config(cam_data *cam)
 {
 	ov3640_write_reg(0x3012 ,0x80);
 	ov3640_write_reg(0x304d ,0x45);
@@ -194,7 +194,7 @@ FNRESLT ov3640_init_config(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION					MODULE ID	: SENS_OV3640_02	
  *  Name	:	configure_dimention_change
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -209,10 +209,10 @@ FNRESLT ov3640_init_config(cam_data *cam)
  *  			In XGA mode upto maximum of 30 fps be acheived.
  *  			In QXGA mode upto maximum of 15 fps be acheived.
  ************************************************************************************************************/
-FNRESLT configure_dimention_change(cam_data *cam)
+int configure_dimention_change(cam_data *cam)
 {
 	static INT32 width,height,old_logic_case;
-	UINT32 logic_case;
+	unsigned int logic_case;
 
 	if(	(cam->cam_sensor.fmt.fmt.pix.width <= MODE_XGA_WIDTH) && 	\
 		(cam->cam_sensor.fmt.fmt.pix.height <= MODE_XGA_HEIGHT))
@@ -337,7 +337,7 @@ FNRESLT configure_dimention_change(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_03
  *  Name	:	ov3640_change_dim_config
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -351,14 +351,14 @@ FNRESLT configure_dimention_change(cam_data *cam)
  *  				bfw_count be added for intel pxa based processor to overcome the loss of 
  *  				first line
  ************************************************************************************************************/
-FNRESLT ov3640_change_dim_config(cam_data *cam)
+int ov3640_change_dim_config(cam_data *cam)
 {
-	static INT32 old_width,old_height;
-	UINT16 width,height,bfw_count	= 2;
-	FNRESLT ret_val;
+	static INT32 old_width, old_height;
+	unsigned int width, height, bfw_count = 2;
+	int ret_val;
 
-	UINT8 y_start	= 2;
-	UINT8 x_start	= 4;
+	UINT8 y_start = 2;
+	UINT8 x_start = 4;
 #if 0 
 	static INT32 focus_box	= ENABLE;
 	if(focus_box == ENABLE)
@@ -372,108 +372,93 @@ FNRESLT ov3640_change_dim_config(cam_data *cam)
 		focus_box = ENABLE;
 	}
 #endif
-	if(cam->cam_sensor.fix_fmt_support)
-	{
+	if (cam->cam_sensor.fix_fmt_support) {
 		ret_val	= cam->cam_sensor.fix_fmt_support(cam);
+
 		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
 			TRACE_ERR_AND_RET(FAIL);
-		}
 	}
 
-	if(	(cam->cam_sensor.fmt.fmt.pix.width == MODE_XGA_WIDTH) && 		\
-		(cam->cam_sensor.fmt.fmt.pix.height == MODE_XGA_HEIGHT))
-	{
-	        width	= cam->cam_sensor.fmt.fmt.pix.width + x_start +4;
-        	height	= cam->cam_sensor.fmt.fmt.pix.height+ y_start +2;
-	}else
-	{
-		width	= cam->cam_sensor.fmt.fmt.pix.width + x_start +4;
-        	height	= cam->cam_sensor.fmt.fmt.pix.height+ y_start +2 +bfw_count;
+	if (cam->cam_sensor.fmt.fmt.pix.width == MODE_XGA_WIDTH &&
+		cam->cam_sensor.fmt.fmt.pix.height == MODE_XGA_HEIGHT) {
+	        width = cam->cam_sensor.fmt.fmt.pix.width + x_start + 4;
+        	height = cam->cam_sensor.fmt.fmt.pix.height+ y_start + 2;
+	}
+	else {
+		width = cam->cam_sensor.fmt.fmt.pix.width + x_start + 4;
+        	height = cam->cam_sensor.fmt.fmt.pix.height + y_start + 2 + bfw_count;
 	}
 
-	if((width == old_width) && (height == old_height))
-	{
+	if (width == old_width && height == old_height) {
 		goto config_pix_format_dump;
-	}else
-	{
-		old_width	= width;
-		old_height	= height;
+	}
+	else {
+		old_width = width;
+		old_height = height;
 	}
 
 	ret_val	= configure_dimention_change(cam);
+
 	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
 		TRACE_ERR_AND_RET(FAIL);
-	}
-	ov3640_write_reg(0x3362 ,((height & 0xFF00)>>4) | ((width & 0xFF00)>>8));
-	ov3640_write_reg(0x3363 ,(width & 0xFF));
-	ov3640_write_reg(0x3364 ,(height & 0xFF));
-	ov3640_write_reg(0x3403 ,((x_start<<4)|y_start));
-	ov3640_write_reg(0x3088 ,(cam->cam_sensor.fmt.fmt.pix.width & 0xFF00)>>8);
-	ov3640_write_reg(0x3089 ,(cam->cam_sensor.fmt.fmt.pix.width & 0xFF));
-	ov3640_write_reg(0x308a ,((cam->cam_sensor.fmt.fmt.pix.height+bfw_count)& 0xFF00)>>8);
-	ov3640_write_reg(0x308b ,((cam->cam_sensor.fmt.fmt.pix.height+bfw_count)& 0xFF));
+	
+	ov3640_write_reg(0x3362, ((height & 0xFF00) >> 4) | ((width & 0xFF00) >> 8));
+	ov3640_write_reg(0x3363, (width & 0xFF));
+	ov3640_write_reg(0x3364, (height & 0xFF));
+	ov3640_write_reg(0x3403, ((x_start << 4) | y_start));
+	ov3640_write_reg(0x3088, (cam->cam_sensor.fmt.fmt.pix.width & 0xFF00) >> 8);
+	ov3640_write_reg(0x3089, (cam->cam_sensor.fmt.fmt.pix.width & 0xFF));
+	ov3640_write_reg(0x308a, ((cam->cam_sensor.fmt.fmt.pix.height + bfw_count) & 0xFF00) >> 8);
+	ov3640_write_reg(0x308b, ((cam->cam_sensor.fmt.fmt.pix.height + bfw_count) & 0xFF));
 
 /*
  * Update the autofocus driver that the width and height of the sensor be changed
  */
-	ov3640_write_reg(0x3f00 ,0x09);
+	ov3640_write_reg(0x3f00, 0x09);
 
-	config_pix_format_dump:
-	{
-		switch(cam->cam_sensor.fmt.fmt.pix.pixelformat)
-		{
-			case V4L2_PIX_FMT_UYVY:
-			default:
-			{
-				ov3640_write_reg(0x3400 ,0x00);
-				ov3640_write_reg(0x3404 ,0x02);
-			}break;
+config_pix_format_dump:
 
-			case V4L2_PIX_FMT_YUYV:
-			{
-				ov3640_write_reg(0x3400 ,0x00);
-				ov3640_write_reg(0x3404 ,0x00);
-			}break;
+	switch (cam->cam_sensor.fmt.fmt.pix.pixelformat) {
+	case V4L2_PIX_FMT_UYVY:
+	default:
+		ov3640_write_reg(0x3400, 0x00);
+		ov3640_write_reg(0x3404, 0x02);
+		break;
+
+	case V4L2_PIX_FMT_YUYV:
+		ov3640_write_reg(0x3400, 0x00);
+		ov3640_write_reg(0x3404, 0x00);
+		break;
 #if 0			
-			case V4L2_PIX_FMT_YUV420:
-			{
-				ov3640_write_reg(0x3400 ,0x00);
-				ov3640_write_reg(0x3404 ,0x08);
-			}break;
+	case V4L2_PIX_FMT_YUV420:
+		ov3640_write_reg(0x3400, 0x00);
+		ov3640_write_reg(0x3404, 0x08);
+		break;
 #endif
-			case V4L2_PIX_FMT_YUV444:
-			{
-				ov3640_write_reg(0x3400 ,0x00);
-				ov3640_write_reg(0x3404 ,0x0E);
-			}break;
+	case V4L2_PIX_FMT_YUV444:
+		ov3640_write_reg(0x3400, 0x00);
+		ov3640_write_reg(0x3404, 0x0E);
+		break;
 
-			case V4L2_PIX_FMT_BGR32:
-			{
-				ov3640_write_reg(0x3400 ,0x01);
-				ov3640_write_reg(0x3404 ,0x1C);
+	case V4L2_PIX_FMT_BGR32:
+		ov3640_write_reg(0x3400, 0x01);
+		ov3640_write_reg(0x3404, 0x1C);
+		break;
 
-			}break;
+	case V4L2_PIX_FMT_RGB555:
+		ov3640_write_reg(0x3400, 0x01); 
+		ov3640_write_reg(0x3404, 0x13);
+		break;
 
-			case V4L2_PIX_FMT_RGB555:
-			{
-				ov3640_write_reg(0x3400 ,0x01); 
-				ov3640_write_reg(0x3404 ,0x13);
-			}break;
+	case V4L2_PIX_FMT_RGB565:
+		ov3640_write_reg(0x3400, 0x01); 
+		ov3640_write_reg(0x3404, 0x30);
+		break;	
 
-			case V4L2_PIX_FMT_RGB565:
-			{
-				ov3640_write_reg(0x3400 ,0x01); 
-				ov3640_write_reg(0x3404 ,0x30);
-			}break;	
-
-			case V4L2_PIX_FMT_SBGGR8:
-			{
-				ov3640_write_reg(0x3400 ,0x01);
-				ov3640_write_reg(0x3404 ,0x18);
-			}break;
-		}
+	case V4L2_PIX_FMT_SBGGR8:
+		ov3640_write_reg(0x3400, 0x01);
+		ov3640_write_reg(0x3404, 0x18);
+		break;
 	}
 	
 	return SUCCESS;
@@ -483,7 +468,7 @@ FNRESLT ov3640_change_dim_config(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_20	
  *  Name	:	ov3640_crop
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 	
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -494,7 +479,7 @@ FNRESLT ov3640_change_dim_config(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_crop(cam_data *cam)
+int ov3640_crop(cam_data *cam)
 {
 	switch(cam->cam_sensor.cmd_to_sensor)
 	{
@@ -525,7 +510,7 @@ FNRESLT ov3640_crop(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_04	
  *  Name	:	ov3640_brightness
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 	
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -535,7 +520,7 @@ FNRESLT ov3640_crop(cam_data *cam)
  *  Description	: 	Image brightness from the sensor can be increased (or) decrease
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT ov3640_brightness(cam_data *cam)
+int ov3640_brightness(cam_data *cam)
 {
 /*
  * Value must be in the range of 
@@ -605,7 +590,7 @@ FNRESLT ov3640_brightness(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_05
  *  Name	:	ov3640_exposure
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -616,7 +601,7 @@ FNRESLT ov3640_brightness(cam_data *cam)
  *  Comments	:  	In ov3640 sensor Average based and Histogram based algorithm be available
  *  			
  ************************************************************************************************************/
-FNRESLT ov3640_exposure(cam_data *cam)
+int ov3640_exposure(cam_data *cam)
 {
 /*
  * Histogram-based Algorithm
@@ -679,7 +664,7 @@ FNRESLT ov3640_exposure(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_06	
  *  Name	:	ov3640_sharpness
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -689,7 +674,7 @@ FNRESLT ov3640_exposure(cam_data *cam)
  *  Description	: 	Image output sharpness from the sensor be increased or decreased. 
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT ov3640_sharpness(cam_data *cam)
+int ov3640_sharpness(cam_data *cam)
 {
 /*
  * Value must be in the range of 
@@ -748,7 +733,7 @@ FNRESLT ov3640_sharpness(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_07
  *  Name	:	ov3640_effects
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -760,7 +745,7 @@ FNRESLT ov3640_sharpness(cam_data *cam)
  *  			and Yellowish
  ************************************************************************************************************/
 
-FNRESLT ov3640_effects(cam_data *cam)
+int ov3640_effects(cam_data *cam)
 {
 /*
  * Value must be in the range of 
@@ -852,7 +837,7 @@ FNRESLT ov3640_effects(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_08
  *  Name	:	ov3640_saturation
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -863,7 +848,7 @@ FNRESLT ov3640_effects(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_saturation(cam_data *cam)
+int ov3640_saturation(cam_data *cam)
 {
 	printk(KERN_DEBUG "ov3640_saturation %d\n",cam->ctrl.value);
 
@@ -921,7 +906,7 @@ FNRESLT ov3640_saturation(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_09
  *  Name	:	ov3640_contrast
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -932,7 +917,7 @@ FNRESLT ov3640_saturation(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_contrast(cam_data *cam)
+int ov3640_contrast(cam_data *cam)
 {
 	printk(KERN_DEBUG "ov3640_contrast %d\n",cam->ctrl.value);
 
@@ -990,7 +975,7 @@ FNRESLT ov3640_contrast(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_10
  *  Name	:	planckian_locus_lookuptable
  *  Parameter1	:	INT32 value	- Temperature of the source.
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -1001,11 +986,11 @@ FNRESLT ov3640_contrast(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT planckian_locus_lookuptable(INT32 value)
+int planckian_locus_lookuptable(INT32 value)
 {
 	typedef struct _aw_temp_gain_adj
 	{
-		UINT32 temp;
+		unsigned int temp;
 		UINT8 r;
 		UINT8 g;
 		UINT8 b;
@@ -1018,7 +1003,7 @@ FNRESLT planckian_locus_lookuptable(INT32 value)
 							{5500,0x5e,0x40,0x46}	\
 						}; 
 
-	UINT32 i	= DISABLE;
+	unsigned int i	= DISABLE;
 	
 	for(i	= DISABLE; i < (sizeof(temp_aw_gain)/sizeof(temp_aw_gain[0]));i++)
 	{
@@ -1039,7 +1024,7 @@ FNRESLT planckian_locus_lookuptable(INT32 value)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_11	
  *  Name	:	ov3640_white_balance
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -1050,9 +1035,9 @@ FNRESLT planckian_locus_lookuptable(INT32 value)
  *  Comments	:  	Auto White balance, Daylight,Tungsten,Fluorescent and cloudy settings are 
  *  			available 
  ************************************************************************************************************/
-FNRESLT ov3640_white_balance(cam_data *cam)
+int ov3640_white_balance(cam_data *cam)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	printk(KERN_DEBUG "ov3640_white_balance %d\n",cam->ctrl.value);
 
 	switch(cam->cam_sensor.cmd_to_sensor)
@@ -1109,7 +1094,7 @@ FNRESLT ov3640_white_balance(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_12	
  *  Name	:	ov3640_vertical_flip
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -1120,7 +1105,7 @@ FNRESLT ov3640_white_balance(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_vertical_flip(cam_data *cam)
+int ov3640_vertical_flip(cam_data *cam)
 {
 	UINT8 reg_value;
 	ov3640_read_reg(0x307c,&reg_value);
@@ -1174,7 +1159,7 @@ FNRESLT ov3640_vertical_flip(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_13	
  *  Name	:	ov3640_horizontal_mirror
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -1185,7 +1170,7 @@ FNRESLT ov3640_vertical_flip(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_horizontal_mirror(cam_data *cam)
+int ov3640_horizontal_mirror(cam_data *cam)
 {
 	UINT8 reg_value;
 	ov3640_read_reg(0x3090,&reg_value);
@@ -1240,7 +1225,7 @@ FNRESLT ov3640_horizontal_mirror(cam_data *cam)
  *
  *  Name	:	ov3640_antishake_firmware_ctrl
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -1252,7 +1237,7 @@ FNRESLT ov3640_horizontal_mirror(cam_data *cam)
  *  			applied
  ************************************************************************************************************/
 
-FNRESLT ov3640_antishake_firmware_ctrl(cam_data *cam)
+int ov3640_antishake_firmware_ctrl(cam_data *cam)
 {
 	switch(cam->cam_sensor.cmd_to_sensor)
 	{	
@@ -4630,7 +4615,7 @@ FNRESLT ov3640_antishake_firmware_ctrl(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_14
  *  Name	:	ov3640_af_firmware_dump
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -4642,7 +4627,7 @@ FNRESLT ov3640_antishake_firmware_ctrl(cam_data *cam)
  *  			applied
  ************************************************************************************************************/
 
-FNRESLT ov3640_af_firmware_dump(cam_data *cam)
+int ov3640_af_firmware_dump(cam_data *cam)
 {
 	ov3640_write_reg(0x308c,0x00);
 	ov3640_write_reg(0x3104,0x02);
@@ -8075,7 +8060,7 @@ FNRESLT ov3640_af_firmware_dump(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	ov3640_frame_interval_support
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8085,16 +8070,16 @@ FNRESLT ov3640_af_firmware_dump(cam_data *cam)
  *  Description	: 	Control the frame rate based on the user request 
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT ov3640_frame_interval_support(cam_data *cam)
+int ov3640_frame_interval_support(cam_data *cam)
 {
 	switch(cam->cam_sensor.cmd_to_sensor)
 	{
 		case GET_DATA_FRM_SENSOR:
 		{
-			UINT32 frame_interval_based_on_mode	= DISABLE;
-			UINT32 usr_width	= cam->cam_sensor.frame_interval_frm_user->width;
-			UINT32 usr_height	= cam->cam_sensor.frame_interval_frm_user->height;
-			UINT32 pixel_format	= cam->cam_sensor.frame_interval_frm_user->pixel_format;
+			unsigned int frame_interval_based_on_mode	= DISABLE;
+			unsigned int usr_width	= cam->cam_sensor.frame_interval_frm_user->width;
+			unsigned int usr_height	= cam->cam_sensor.frame_interval_frm_user->height;
+			unsigned int pixel_format	= cam->cam_sensor.frame_interval_frm_user->pixel_format;
 
 			for(	frame_interval_based_on_mode	= DISABLE	;				\
 				frame_interval_based_on_mode	< cam->cam_sensor.total_frm_interval_support;	\
@@ -8138,7 +8123,7 @@ FNRESLT ov3640_frame_interval_support(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	ov3640_format_support
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8149,14 +8134,14 @@ FNRESLT ov3640_frame_interval_support(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_format_support(cam_data *cam)
+int ov3640_format_support(cam_data *cam)
 {
-	UINT32 pix_fmt_count	= DISABLE;
+	unsigned int pix_fmt_count	= DISABLE;
 	switch(cam->cam_sensor.cmd_to_sensor)
 	{
 		case GET_DATA_FRM_SENSOR:
 		{
-			UINT32 pixel_format	= cam->cam_sensor.fmt_frm_user->pixel_format;
+			unsigned int pixel_format	= cam->cam_sensor.fmt_frm_user->pixel_format;
 			if(cam->cam_sensor.fmt_frm_user->index	>= cam->cam_sensor.total_frms_support)
 			{
 				TRACE_ERR_AND_RET(-EINVAL);
@@ -8206,7 +8191,7 @@ FNRESLT ov3640_format_support(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	ov3640_frame_rate_ctrl
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8217,18 +8202,18 @@ FNRESLT ov3640_format_support(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_frame_rate_ctrl(cam_data *cam)
+int ov3640_frame_rate_ctrl(cam_data *cam)
 {
 
 	/*
 	 * Sensor Will take mclk from input ranges from 6Mhz t0 27 Mhz (V3640_COB_USA.pdf)
 	 */
 #if 0
-	UINT32 clk_set		= DISABLE;
+	unsigned int clk_set		= DISABLE;
 #endif
 	UINT8 regval_3011	= DISABLE;
-	UINT32 fps		= DISABLE;
-	UINT32 fps_need		= DISABLE;
+	unsigned int fps		= DISABLE;
+	unsigned int fps_need		= DISABLE;
 
 	if(cam->cam_sensor.s_parm.type	!= V4L2_BUF_TYPE_VIDEO_CAPTURE)
 	{
@@ -8309,7 +8294,7 @@ FNRESLT ov3640_frame_rate_ctrl(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_15
  *  Name	:	ov3640_sens_strobe
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8319,7 +8304,7 @@ FNRESLT ov3640_frame_rate_ctrl(cam_data *cam)
  *  Description	: 	External flash light strobe signal control be enabled (or) disabled here 
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT ov3640_sens_strobe(cam_data *cam)
+int ov3640_sens_strobe(cam_data *cam)
 {
 	if((cam->ctrl.value) && (cam->cam_sensor.sens_strobe_en))
 	{
@@ -8338,7 +8323,7 @@ FNRESLT ov3640_sens_strobe(cam_data *cam)
  *  Name	:	ov3640_focus
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 
  *  
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8353,7 +8338,7 @@ FNRESLT ov3640_sens_strobe(cam_data *cam)
  *  			4. Automatic continous focus
  *  			5. Single Auto focus
  ************************************************************************************************************/
-FNRESLT ov3640_focus(cam_data *cam)
+int ov3640_focus(cam_data *cam)
 {
 	af_status reg_data;
 	UINT8 reg_value;
@@ -8568,7 +8553,7 @@ FNRESLT ov3640_focus(cam_data *cam)
  *  Parameter4	:	INT32 num	- Number of data need to read/write in i2c transation
  *  Parameter5	:	INT32 tran_flag	- 0- Write,1-read
  *
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8579,11 +8564,11 @@ FNRESLT ov3640_focus(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_i2c_client_xfer(	INT32 addr, PINT8 reg, PINT8 buf, INT32 num,	\
+int ov3640_i2c_client_xfer(	INT32 addr, PINT8 reg, PINT8 buf, INT32 num,	\
 				INT32 tran_flag)
 {
 	struct i2c_msg msg[2];
-	FNRESLT ret_val;
+	int ret_val;
 	INT32 ret;
 	cam_data *cam	= NULL;
 	UINT8 reg_addr_data[3];
@@ -8671,9 +8656,9 @@ FNRESLT ov3640_i2c_client_xfer(	INT32 addr, PINT8 reg, PINT8 buf, INT32 num,	\
  *  
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_18	
  *  Name	:	ov3640_write_reg
- *  Parameter1	:	UINT16 reg_address	- Ov3640 register address
+ *  Parameter1	:	unsigned int reg_address	- Ov3640 register address
  *  Parameter2	:	UINT8 reg_data		- Ov3640 register data
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8683,70 +8668,50 @@ FNRESLT ov3640_i2c_client_xfer(	INT32 addr, PINT8 reg, PINT8 buf, INT32 num,	\
  *  Description	: 	This function write the data in the mentioned register address of ov3640 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT ov3640_write_reg(UINT16 reg_address,UINT8 reg_data)
+int ov3640_write_reg(unsigned int reg_address, unsigned char reg_data)
 {
-	UINT8 retry_count	= 3;
-	UINT8 reg_addr[2];
-	UINT8 reg_data_bw	= reg_data;
-	UINT8 reg_data_aw	= 0;
-	FNRESLT ret_val;
+	int i, ret_val;
+	unsigned char reg_addr[2];
+	unsigned char reg_data_aw;
 
-
-	reg_addr[0]	= 0xFF & (reg_address >> 8);
-	reg_addr[1]	= 0xFF & reg_address;
+	reg_addr[0] = 0xFF & (reg_address >> 8);
+	reg_addr[1] = 0xFF & reg_address;
 	
-	for(;retry_count;retry_count--)
-	{
-		udelay(100);
-		ret_val	= ov3640_i2c_client_xfer(OV3640_I2C_ADDRESS,reg_addr, &reg_data_bw, 1, 0);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
+	for (i = 0; i < 3; i++) {
+		ret_val	= ov3640_i2c_client_xfer(OV3640_I2C_ADDRESS, reg_addr, &reg_data, 1, 0);
+
+		if (CHECK_IN_FAIL_LIMIT(ret_val))
 			return I2C_WRITE_FAIL;
-		}
 
-		printk(KERN_DEBUG "write : addr=%x, val=%x ",reg_address, reg_data_bw);
+		udelay(100);
 
-		if((reg_address != 0x3f00) && (reg_address != 0x3012))
-		{
-			udelay(100);
-
-			ret_val	= ov3640_read_reg(reg_address,&reg_data_aw);
-			if(CHECK_IN_FAIL_LIMIT(ret_val))
-			{
-				return I2C_WRITE_FAIL;
-			}
-			printk(KERN_DEBUG "read : addr=%x, val=%x",reg_address,reg_data_aw);
-
-		}else
-		{
-			reg_data_aw	= reg_data_bw;
-		}
-
-
-		if(reg_data_bw == reg_data_aw)
-		{
-			printk(KERN_DEBUG "  SUCCESS \n");
+		/* don't know why these are special */
+		if (reg_address == 0x3f00 || reg_address == 0x3012) {
 			break;
-		}else
-		{
-			printk(KERN_DEBUG "  FAIL    \n");
-			if(retry_count != 1)
-			{
-				printk(KERN_DEBUG "  RETRY 	:    ");
-
-			}			
 		}
+
+		/* else do a read check */
+		ret_val	= ov3640_read_reg(reg_address, &reg_data_aw);
+			
+		if(CHECK_IN_FAIL_LIMIT(ret_val))
+			return I2C_WRITE_FAIL;
+
+		if (reg_data == reg_data_aw)
+			break;
+		
+		udelay(100);
 	}
 	
-	return I2C_WRITE_SUCCESS;
+	return i < 3 ? I2C_WRITE_SUCCESS : I2C_WRITE_FAIL;
 }
+
 /************************************************************************************************************
  *  
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_19	
  *  Name	:	ov3640_read_reg
- *  Parameter1	:	UINT16 reg_address	- Ov3640 register address
- *  Parameter2	:	UPINT8 reg_data		- Ov3640 register data
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Parameter1	:	unsigned int reg_address	- Ov3640 register address
+ *  Parameter2	:	unsigne char *reg_data		- Ov3640 register data
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8756,22 +8721,23 @@ FNRESLT ov3640_write_reg(UINT16 reg_address,UINT8 reg_data)
  *  Description	: 	This function read the data in the mentioned register address of ov3640
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT ov3640_read_reg(UINT16 reg_address,UPINT8 reg_data)
+int ov3640_read_reg(unsigned int reg_address, unsigned char *reg_data)
 {
-	UINT8 reg_addr[2];
-	reg_addr[0]	= 0xFF & (reg_address >> 8);
-	reg_addr[1]	= 0xFF & reg_address;
+	unsigned char reg_addr[2];
 
-	if (ov3640_i2c_client_xfer(OV3640_I2C_ADDRESS,reg_addr,reg_data, 1, 1) < 0)
-	{
-		printk("%s:read reg error: reg=%x, val=%x\n",__func__,reg_address ,*reg_data);
+	reg_addr[0] = 0xFF & (reg_address >> 8);
+	reg_addr[1] = 0xFF & reg_address;
+
+	if (ov3640_i2c_client_xfer(OV3640_I2C_ADDRESS, reg_addr, reg_data, 1, 1) < 0) {
+		printk("%s:read reg error: reg=%x, val=%x\n",__func__,
+			reg_address, *reg_data);
 		return -1;
 	}
-	printk(KERN_DEBUG "read : addr=%x, val=%x",reg_address,*reg_data);
+
+	printk(KERN_DEBUG "read : addr=%x, val=%x",reg_address, *reg_data);
 	udelay(100);
 
 	return I2C_WRITE_SUCCESS;
-
 }
 
 /************************************************************************************************************
@@ -8792,7 +8758,7 @@ static INT32 __init ov3640_probe(struct i2c_client *client, const struct i2c_dev
 #define OV3640_STANDBY_GPIO	167
 
 	cam_data *cam	= NULL;
-	FNRESLT ret_val;
+	int ret_val;
 
 	if (i2c_get_clientdata(client))
 	{
@@ -8880,7 +8846,7 @@ static INT32 __exit ov3640_remove(struct i2c_client *client)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	ov3640_init	
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -8902,12 +8868,12 @@ static INT32 __exit ov3640_remove(struct i2c_client *client)
 	};
 	MODULE_DEVICE_TABLE(i2c_0, ov3640_id);
 
-FNRESLT ov3640_init(cam_data *cam)
+int ov3640_init(cam_data *cam)
 {
-	FNRESLT  ret_val;
-	UINT32	index			= DISABLE;
-	UINT32	fmt_index		= DISABLE;
-	UINT32	frame_rate_index	= DISABLE;
+	int  ret_val;
+	unsigned int	index			= DISABLE;
+	unsigned int	fmt_index		= DISABLE;
+	unsigned int	frame_rate_index	= DISABLE;
 	
 	cam->cam_sensor.i2c_driver.driver.name	= OV3640_DRIVER_NAME;
 	cam->cam_sensor.i2c_driver.driver.owner	= THIS_MODULE;
@@ -9099,7 +9065,7 @@ FNRESLT ov3640_init(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	ov3640_detect_device
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -9110,9 +9076,9 @@ FNRESLT ov3640_init(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_detect_device(cam_data *cam)
+int ov3640_detect_device(cam_data *cam)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	UINT8 reg_data_aw	= 0x00;
 
 	ret_val	= ov3640_read_reg(0x300a,&reg_data_aw);
@@ -9136,7 +9102,7 @@ FNRESLT ov3640_detect_device(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	ov3640_exit
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -9147,7 +9113,7 @@ FNRESLT ov3640_detect_device(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_exit(cam_data *cam)
+int ov3640_exit(cam_data *cam)
 {
 	i2c_del_driver(&cam->cam_sensor.i2c_driver);
 	memset(&cam->cam_sensor,0x00,sizeof(struct camera_sensor));
@@ -9159,7 +9125,7 @@ FNRESLT ov3640_exit(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	ov3640_reset_config
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -9169,7 +9135,7 @@ FNRESLT ov3640_exit(cam_data *cam)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT ov3640_reset_config(cam_data *cam)
+int ov3640_reset_config(cam_data *cam)
 {
 	return SUCCESS;
 	
@@ -9179,7 +9145,7 @@ FNRESLT ov3640_reset_config(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	chk_pix_format_support
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -9190,7 +9156,7 @@ FNRESLT ov3640_reset_config(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT chk_pix_format_support(cam_data *cam)
+int chk_pix_format_support(cam_data *cam)
 {
 	switch(cam->cam_sensor.fmt.fmt.pix.pixelformat)	
 	{
@@ -9249,7 +9215,7 @@ FNRESLT chk_pix_format_support(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	ov3640_query_formats
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -9260,7 +9226,7 @@ FNRESLT chk_pix_format_support(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_query_formats(cam_data *cam)
+int ov3640_query_formats(cam_data *cam)
 {
 	switch(cam->cam_sensor.qfmt.type)
 	{
@@ -9325,7 +9291,7 @@ FNRESLT ov3640_query_formats(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	ov3640_fix_supported_formats
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -9336,9 +9302,9 @@ FNRESLT ov3640_query_formats(cam_data *cam)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT ov3640_fix_supported_formats(cam_data *cam)
+int ov3640_fix_supported_formats(cam_data *cam)
 {
-	FNRESLT ret_val;
+	int ret_val;
 
 	switch(cam->cam_sensor.fmt.type)
 	{
@@ -9406,7 +9372,7 @@ FNRESLT ov3640_fix_supported_formats(cam_data *cam)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
  *  Name	:	register_sensor_bus
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -9416,7 +9382,7 @@ FNRESLT ov3640_fix_supported_formats(cam_data *cam)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT register_sensor_bus(cam_data *cam)
+int register_sensor_bus(cam_data *cam)
 {
 	if(cam == NULL)
 	{

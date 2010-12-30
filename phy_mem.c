@@ -233,7 +233,7 @@ int free_phy_mem(u32 phy_addr)
 		}
 		else {
 			get_mem_node(&phy_mem,GET_MEM_NODE);
-			iounmap((PINT0)phy_mem->virtual_address);
+			iounmap((void *)phy_mem->virtual_address);
 			kfree(phy_mem);
 
 			if (phy_mem_last) {

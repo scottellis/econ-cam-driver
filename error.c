@@ -48,7 +48,7 @@
  *  			debugged over here 
  *  Comments	:  				 	
  ******************************************************************************/
-#define TEP(file_name,function_name,line_no,Error_number,Error_number_in_string,Reason_in_string) 			\
+#define TEP(file_name, function_name, line_no, Error_number, Error_number_in_string, Reason_in_string) 			\
 															\
 	case Error_number:												\
 	{														\
@@ -59,7 +59,7 @@
 		printf(KERN_ALERT "Function        : %s\n",function_name);						\
 		printf(KERN_ALERT "Line number     : %u\n",line_no);							\
 		printf(KERN_ALERT "Error name      : %s\n",Error_number_in_string);					\
-		printf(KERN_ALERT "Error number Dec: %lld Hex: 0x%X \n",(INT64)Error_number,(INT32)Error_number);	\
+		printf(KERN_ALERT "Error number Dec: %d Hex: 0x%X \n",(int)Error_number, (int)Error_number);		\
 		printf(KERN_ALERT "Reason          : %s\n",Reason_in_string);						\
 		printf(KERN_ALERT "------------------------------------------------------------------------------\n");	\
 		break;													\
@@ -90,11 +90,11 @@
  *  Parameter3	:	UINT32 line_no
  *  Parameter4	:	UINT32 Error_num
  *  
- *  Returns	:	FNRESLT_NONE
+ *  Returns	:	void
  *  Description	: 	
  *  Comments	:  	Based on the error Number, Debug prints will be called.
  ************************************************************************************************************/
-FNRESLT_NONE trace_error(PINT8 file_name, PINT8 function_name, int line_no, int Error_num)
+void trace_error(PINT8 file_name, PINT8 function_name, int line_no, int Error_num)
 {
 	switch(Error_num)
 	{

@@ -52,7 +52,7 @@ INT32 omap_v4l2_open(struct file *file)
 	INT32 err = 0;
 	struct video_device *dev = video_devdata(file);
 	cam_data *cam;
-	FNRESLT ret_val;
+	int ret_val;
 
 	ret_val	= v4l2_base_struct(&cam,GET_ADDRESS);
 	if(CHECK_IN_FAIL_LIMIT(ret_val))
@@ -93,7 +93,7 @@ INT32 omap_v4l2_open(struct file *file)
 INT32 omap_v4l2_close(struct file *file)
 {
 	INT32 err = 0;
-	FNRESLT ret_val;
+	int ret_val;
 
 	cam_data *cam;
 
@@ -124,9 +124,9 @@ INT32 omap_v4l2_close(struct file *file)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	cam_get_pages
  *  Parameter1	:	UPINT32 vir_addr	- Virtual of available physical address available
- *  Parameter2	:	UINT32 size		- size of memory free and available
+ *  Parameter2	:	unsigned int size		- size of memory free and available
  *  Parameter3	:	UPINT32 phy_addr	- Physical address of memory available from the kernel
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -135,11 +135,11 @@ INT32 omap_v4l2_close(struct file *file)
  *  Description	: 	get the free memory available from the kernel.  				
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT cam_get_pages(UPINT32 vir_addr,UINT32 size,UPINT32 phy_addr)
+int cam_get_pages(UPINT32 vir_addr,unsigned int size,UPINT32 phy_addr)
 {
 	ULINT32 adr;
 
-	*vir_addr	= (UINT32)__get_free_pages(GFP_KERNEL |					\
+	*vir_addr	= (unsigned int)__get_free_pages(GFP_KERNEL |					\
 						GFP_DMA,get_order(size));
 	if(*vir_addr == DISABLE)
 	{
@@ -155,7 +155,7 @@ FNRESLT cam_get_pages(UPINT32 vir_addr,UINT32 size,UPINT32 phy_addr)
 		adr += PAGE_SIZE;
 		size -= PAGE_SIZE;
 	}
-	*phy_addr	= (UINT32)virt_to_phys((PINT0)*vir_addr);
+	*phy_addr	= (unsigned int)virt_to_phys((void *)*vir_addr);
 
 	return SUCCESS;
 }
@@ -163,9 +163,9 @@ FNRESLT cam_get_pages(UPINT32 vir_addr,UINT32 size,UPINT32 phy_addr)
  *  
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	cam_free_pages
- *  Parameter1	:	UINT32 addr		- Virtural address of allocated physical pages
- *  Parameter2	:	UINT32 bufsize		- buffer size
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Parameter1	:	unsigned int addr		- Virtural address of allocated physical pages
+ *  Parameter2	:	unsigned int bufsize		- buffer size
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -175,9 +175,9 @@ FNRESLT cam_get_pages(UPINT32 vir_addr,UINT32 size,UPINT32 phy_addr)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT cam_free_pages(UINT32 addr, UINT32 bufsize)
+int cam_free_pages(unsigned int addr, unsigned int bufsize)
 {
-        UINT32 size, ad = addr;
+        unsigned int size, ad = addr;
 
         size = PAGE_SIZE << (get_order(bufsize));
         if (!addr)
@@ -212,10 +212,10 @@ FNRESLT cam_free_pages(UINT32 addr, UINT32 bufsize)
 INT32 omap_v4l2_read(struct file *file, INT8 *buf, size_t count, loff_t * ppos)
 {
 //	struct video_device *dev = video_devdata(file);
-	FNRESLT ret_val;
+	int ret_val;
 	cam_data *cam = NULL;
 	INT32 err;
-	UINT32 wait_event_ret_val	= DISABLE;
+	unsigned int wait_event_ret_val	= DISABLE;
 
 
 	ret_val	= v4l2_base_struct(&cam,GET_ADDRESS);
@@ -356,7 +356,7 @@ INT32 omap_v4l2_read(struct file *file, INT8 *buf, size_t count, loff_t * ppos)
 
 		return -ETIME;
 	}
-	err = copy_to_user(buf,(UPINT8)cam->still.vir_addr, cam->capture.v2f.fmt.pix.sizeimage);
+	err = copy_to_user(buf,(unsigned char *)cam->still.vir_addr, cam->capture.v2f.fmt.pix.sizeimage);
 
 	if (free_phy_mem(cam->still.phy_addr))
 		goto exit;
@@ -423,16 +423,16 @@ INT32 omap_mmap(struct file *file, struct vm_area_struct *vma)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	omap_v4l2_do_ioctl
  *  Parameter1	:	struct file *file
- *  Parameter2	:	UINT32 ioctlnr
- *  Parameter3	:	PINT0 arg
+ *  Parameter2	:	unsigned int ioctlnr
+ *  Parameter3	:	void *arg
  *  Returns	:	LINT32	- On sucess returns 0
  *  				- On Failure a negative number be returned
  *  Description	: 	process ioctl commands here
  *  Comments	:  	
  ************************************************************************************************************/
-LINT32 omap_v4l2_do_ioctl(struct file *file,UINT32 ioctlnr,PINT0 arg)
+LINT32 omap_v4l2_do_ioctl(struct file *file,unsigned int ioctlnr, void *arg)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	cam_data *cam = NULL;
 
 	ret_val	= v4l2_base_struct(&cam,GET_ADDRESS);
@@ -802,7 +802,7 @@ LINT32 omap_v4l2_do_ioctl(struct file *file,UINT32 ioctlnr,PINT0 arg)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	omap_v4l2_ioctl
  *  Parameter1	:	struct file *file
- *  Parameter2	:	UINT32 cmd
+ *  Parameter2	:	unsigned int cmd
  *  Parameter3	:	ULINT32 arg
  *
  *  Returns	:	LINT32	- On sucess returns 0
@@ -810,7 +810,7 @@ LINT32 omap_v4l2_do_ioctl(struct file *file,UINT32 ioctlnr,PINT0 arg)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-LINT32 omap_v4l2_ioctl( struct file *file,UINT32 cmd,ULINT32 arg)
+LINT32 omap_v4l2_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	return video_usercopy(file, cmd, arg,omap_v4l2_do_ioctl);
 }

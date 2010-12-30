@@ -41,7 +41,7 @@
  *  Name	:	v4l2_base_struct
  *  Parameter1	:	cam_data **cam	- pointer need to register
  *  Parameter2	:	UINT8 option	- set or get the address
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -50,7 +50,7 @@
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT v4l2_base_struct(cam_data **cam,UINT8 option)
+int v4l2_base_struct(cam_data **cam,UINT8 option)
 {
 
 /*
@@ -58,7 +58,7 @@ FNRESLT v4l2_base_struct(cam_data **cam,UINT8 option)
  * GET_ADDRESS 
  * MAKE_ADDRESS_INVALID
  */
-	static UINT32 g_cam_st_addr;
+	static unsigned int g_cam_st_addr;
 
 	if(cam == NULL)
 	{
@@ -68,7 +68,7 @@ FNRESLT v4l2_base_struct(cam_data **cam,UINT8 option)
 
 	if(option == SET_ADDRESS)
 	{
-		g_cam_st_addr =(UINT32)*cam;
+		g_cam_st_addr =(unsigned int)*cam;
 	}else if(option == GET_ADDRESS)
 	{
 		if(g_cam_st_addr)
@@ -97,7 +97,7 @@ EXPORT_SYMBOL(v4l2_base_struct);
  *  Name	:	init_v4l2_base_struct	
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -106,7 +106,7 @@ EXPORT_SYMBOL(v4l2_base_struct);
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT init_v4l2_base_struct(cam_data *cam)
+int init_v4l2_base_struct(cam_data *cam)
 {
 
 	static struct v4l2_file_operations omap_v4l_fops = 	\

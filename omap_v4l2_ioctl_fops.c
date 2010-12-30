@@ -43,7 +43,7 @@
  *  Name	:	omap_v4l2_capability
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	struct v4l2_capability *cap
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -52,7 +52,7 @@
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_capability(cam_data *cam,struct v4l2_capability *cap)
+int omap_v4l2_capability(cam_data *cam,struct v4l2_capability *cap)
 {
 	memcpy(cap,&cam->v4l2_cap,sizeof(struct v4l2_capability));
 	return SUCCESS;
@@ -64,7 +64,7 @@ FNRESLT omap_v4l2_capability(cam_data *cam,struct v4l2_capability *cap)
  *  Name	:	omap_v4l2_s_fmt
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	struct v4l2_format *f
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -73,9 +73,9 @@ FNRESLT omap_v4l2_capability(cam_data *cam,struct v4l2_capability *cap)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_s_fmt(cam_data *cam, struct v4l2_format *f)
+int omap_v4l2_s_fmt(cam_data *cam, struct v4l2_format *f)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	
 	if(f->type		== V4L2_BUF_TYPE_VIDEO_CAPTURE)
 	{
@@ -106,7 +106,7 @@ FNRESLT omap_v4l2_s_fmt(cam_data *cam, struct v4l2_format *f)
  *  Name	:	omap_v4l2_g_fmt
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	struct v4l2_format *f
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -116,7 +116,7 @@ FNRESLT omap_v4l2_s_fmt(cam_data *cam, struct v4l2_format *f)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT omap_v4l2_g_fmt(cam_data *cam, struct v4l2_format *f)
+int omap_v4l2_g_fmt(cam_data *cam, struct v4l2_format *f)
 {
 	if(f->type		== V4L2_BUF_TYPE_VIDEO_CAPTURE)
 	{
@@ -133,7 +133,7 @@ FNRESLT omap_v4l2_g_fmt(cam_data *cam, struct v4l2_format *f)
  *  MODULE TYPE	:	FUNCTION				MODULE ID	: 
  *  Name	:	omap_v4l2_ctrl
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -143,10 +143,10 @@ FNRESLT omap_v4l2_g_fmt(cam_data *cam, struct v4l2_format *f)
  *  Comments	:  	
  ************************************************************************************************************/
 
-FNRESLT omap_v4l2_ctrl(cam_data *cam)
+int omap_v4l2_ctrl(cam_data *cam)
 {
-	FNRESLT ret_val;
-  	typedef FNRESLT (*camera_register_dump) (cam_data *cam);
+	int ret_val;
+  	typedef int (*camera_register_dump) (cam_data *cam);
 	camera_register_dump sensor_register_dump	= NULL;
 
 	switch (cam->ctrl.id)
@@ -336,7 +336,7 @@ FNRESLT omap_v4l2_ctrl(cam_data *cam)
  *  Name	:	omap_v4l2_req_buf
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	struct v4l2_requestbuffers *req
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -345,9 +345,9 @@ FNRESLT omap_v4l2_ctrl(cam_data *cam)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_req_buf(cam_data *cam,struct v4l2_requestbuffers *req)
+int omap_v4l2_req_buf(cam_data *cam,struct v4l2_requestbuffers *req)
 {
-	UINT32 i;
+	unsigned int i;
 	
 	if(cam->task.bit.capture	== ENABLE)
 	{
@@ -421,7 +421,7 @@ FNRESLT omap_v4l2_req_buf(cam_data *cam,struct v4l2_requestbuffers *req)
  *  Name	:	omap_v4l2_query_buf
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	struct v4l2_buffer *buf
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -430,7 +430,7 @@ FNRESLT omap_v4l2_req_buf(cam_data *cam,struct v4l2_requestbuffers *req)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_query_buf(cam_data *cam,struct v4l2_buffer *buf)
+int omap_v4l2_query_buf(cam_data *cam,struct v4l2_buffer *buf)
 {
 
 	if(buf->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
@@ -457,7 +457,7 @@ FNRESLT omap_v4l2_query_buf(cam_data *cam,struct v4l2_buffer *buf)
  *  Name	:	omap_v4l2_queue_buf
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	struct v4l2_buffer *buf
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -466,9 +466,9 @@ FNRESLT omap_v4l2_query_buf(cam_data *cam,struct v4l2_buffer *buf)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_queue_buf(cam_data *cam,struct v4l2_buffer *buf)
+int omap_v4l2_queue_buf(cam_data *cam,struct v4l2_buffer *buf)
 {
-	UINT32 index		= buf->index;
+	unsigned int index		= buf->index;
 
 	if ((cam->capture.frame[index].buffer.flags & 0x7) == V4L2_BUF_FLAG_MAPPED)
 	{
@@ -497,7 +497,7 @@ FNRESLT omap_v4l2_queue_buf(cam_data *cam,struct v4l2_buffer *buf)
  *  Name	:	omap_v4l2_dqueue_buf
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	struct v4l2_buffer *buf
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -506,12 +506,12 @@ FNRESLT omap_v4l2_queue_buf(cam_data *cam,struct v4l2_buffer *buf)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_dqueue_buf(cam_data *cam,struct v4l2_buffer *buf)
+int omap_v4l2_dqueue_buf(cam_data *cam,struct v4l2_buffer *buf)
 {
-	UINT32 wait_event_ret_val;
+	unsigned int wait_event_ret_val;
 	INT32 index		= -1;
 	struct timeval timestamp;
-	UINT32 i		= DISABLE;
+	unsigned int i		= DISABLE;
 	memset(&timestamp,DISABLE,sizeof(struct timeval));
 
 /*
@@ -578,7 +578,7 @@ FNRESLT omap_v4l2_dqueue_buf(cam_data *cam,struct v4l2_buffer *buf)
  *  Name	:	omap_v4l2_stream_on
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	INT32 *type
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -587,9 +587,9 @@ FNRESLT omap_v4l2_dqueue_buf(cam_data *cam,struct v4l2_buffer *buf)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_stream_on(cam_data *cam,INT32 *type)
+int omap_v4l2_stream_on(cam_data *cam,INT32 *type)
 {
-	FNRESLT ret_val;
+	int ret_val;
 	if(cam->task.bit.capture	== ENABLE)
 	{
 		TRACE_ERR_AND_RET(FAIL);
@@ -643,7 +643,7 @@ FNRESLT omap_v4l2_stream_on(cam_data *cam,INT32 *type)
  *  Name	:	omap_v4l2_stream_off
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	INT32 *type
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -652,10 +652,10 @@ FNRESLT omap_v4l2_stream_on(cam_data *cam,INT32 *type)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_stream_off(cam_data *cam,INT32 *type)
+int omap_v4l2_stream_off(cam_data *cam,INT32 *type)
 {
-	FNRESLT	ret_val;
-	UINT32	i;
+	int	ret_val;
+	unsigned int	i;
 
 	ret_val	= disable_ccdc(cam);
 	if(CHECK_IN_FAIL_LIMIT(ret_val))
@@ -697,7 +697,7 @@ FNRESLT omap_v4l2_stream_off(cam_data *cam,INT32 *type)
  *  Name	:	omap_v4l2_enum_fmt
  *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
  *  Parameter2	:	struct v4l2_fmtdesc *fmt
- *  Returns	:	FNRESLT		- On Success Zero (or) positive value be returned to the calling
+ *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
  *  					  Functions and On error a negative value be returned
  *
  *  					  Note: 
@@ -706,7 +706,7 @@ FNRESLT omap_v4l2_stream_off(cam_data *cam,INT32 *type)
  *  Description	: 	
  *  Comments	:  	
  ************************************************************************************************************/
-FNRESLT omap_v4l2_enum_fmt(cam_data *cam,struct v4l2_fmtdesc *fmt)
+int omap_v4l2_enum_fmt(cam_data *cam,struct v4l2_fmtdesc *fmt)
 {
 	if(cam->cam_sensor.totol_fmt_desc <= fmt->index)
 	{
