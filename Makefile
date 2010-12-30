@@ -10,7 +10,6 @@ ifneq ($(KERNELRELEASE),)
 				v4l2_driver_base.o \
 				omap_camera_interface.o \
 				omap_v4l2_fops_base.o \
-				isp.o \
 				omap_v4l2_ioctl_fops.o \
 				exit_module.o \
 				error.o \

@@ -1,10 +1,10 @@
  econ-cam-driver
 =============
 
-This is a forked driver for the e-con Systems e-CAM32_OMAP_GSTIX board for
-Gumstix Overo.
+This is a fork of the e-con Systems driver for the e-CAM32_OMAP_GSTIX 
+board for Gumstix Overos.
 
-There is a forked console program for testing this same driver here
+There is a related forked console program for testing this driver here
 
 https://github.com/scottellis/econ-cam-test
 
