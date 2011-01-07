@@ -55,22 +55,19 @@ irqreturn_t omap34xx_isp_isr(int irq, void *_cam)
 	cam_data *cam	= _cam;
 	int ret_val;
 
-	if(cam->isp->isp_main.reg.isp_irq0status.bit.ccdc_vd0_irq			== ENABLED)
-	{
-		if(cam->task.bit.still	== ENABLE)
-		{
+	if (cam->isp->isp_main.reg.isp_irq0status.bit.ccdc_vd0_irq == 1) {
+		if (cam->task.bit.still == 1) {
 			cam->still.frame_count++;
-			if(cam->still.frame_count >= STILL_IMAGE_CAPTURE_FRAME_NUMBER)
-			{
+		
+			if (cam->still.frame_count >= STILL_IMAGE_CAPTURE_FRAME_NUMBER) {
 				wake_up_interruptible(&cam->still.dma_frame_complete_still);
-				cam->still.wait_queue_head_t_dma_frame_complete_still	= ENABLE;
+				cam->still.wait_queue_head_t_dma_frame_complete_still = 1;
 			}
-		}else if(cam->task.bit.capture	== ENABLE)
-		{
-/*
- * Trigger the wake up event
- */
+		}
+		else if (cam->task.bit.capture == 1) {
+			/* Trigger the wake up event */
 			ret_val	= isp_prg_sdram_addr(cam);
+
 			if(CHECK_IN_FAIL_LIMIT(ret_val))
 			{
 				
@@ -203,24 +200,6 @@ static int isp_set_xclk(cam_data *cam, u32 xclk, u8 xclksel, u32 *current_xclk)
 	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	mclk_to_sensor
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Parameter2	:	option		- command to perform 
- *  
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	Function callback exposed to other layers.
- *  Comments	:  	
- ************************************************************************************************************/
-
 int mclk_to_sensor(cam_data *cam, unsigned int xclk, unsigned int *clk_set)
 {
 	return isp_set_xclk(cam, xclk, 0, clk_set);
@@ -271,107 +250,61 @@ static int omap_isp_base_struct(cam_data *cam, u8 option)
 	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	reset the isp and ccdc interface
- *  Comments	:  	
- ************************************************************************************************************/
+/*
+ * Reset the isp and ccdc interface
+ */
 int isp_reset(cam_data *cam)
 {
-	unsigned int time_out	= 10;
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
+	unsigned int time_out = 10;
 	
-/*
- * Clear all the status register and irq registers
- */
-	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE	= DISABLE;
-	cam->isp->isp_main.reg.isp_irq0status.ISP_IRQ0STATUS	= cam->isp->isp_main.reg.isp_irq0status.ISP_IRQ0STATUS;
+	if (!cam)
+		return -1;
+	
+	/* Clear all the status register and irq registers */
+	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE = 0;
+	cam->isp->isp_main.reg.isp_irq0status.ISP_IRQ0STATUS = cam->isp->isp_main.reg.isp_irq0status.ISP_IRQ0STATUS;
 
-	cam->isp->isp_main.reg.isp_irq1enable.ISP_IRQ1ENABLE	= DISABLE;
-	cam->isp->isp_main.reg.isp_irq1status.ISP_IRQ1STATUS	= cam->isp->isp_main.reg.isp_irq1status.ISP_IRQ1STATUS;
+	cam->isp->isp_main.reg.isp_irq1enable.ISP_IRQ1ENABLE = 0;
+	cam->isp->isp_main.reg.isp_irq1status.ISP_IRQ1STATUS = cam->isp->isp_main.reg.isp_irq1status.ISP_IRQ1STATUS;
 
-/*
- * Enable the soft reset
- */
-	cam->isp->isp_main.reg.isp_sysconfig.bit.soft_reset	= ENABLE;
+	/* Enable the soft reset */
+	cam->isp->isp_main.reg.isp_sysconfig.bit.soft_reset = 1;
 
-/*
- * Check the reset is done 
- */
-	for(;time_out--;)
-	{
-		if(cam->isp->isp_main.reg.isp_sysstatus.bit.reset_done	== ENABLE)
-		{
+	/* Check the reset is done */
+	for (; time_out--;) {
+		if (cam->isp->isp_main.reg.isp_sysstatus.bit.reset_done	== 1)
 			break;
-		}
+		
 		mdelay(100);
 	}
 
-	cam->isp->isp_main.reg.isp_sysconfig.bit.midle_mode	= ENABLE;
-	cam->isp->isp_main.reg.isp_sysconfig.bit.auto_idle	= DISABLE;
-	return SUCCESS;
+	cam->isp->isp_main.reg.isp_sysconfig.bit.midle_mode = 1;
+	cam->isp->isp_main.reg.isp_sysconfig.bit.auto_idle = 0;
+
+	return 0;
 }
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	program_dummy_isp_sdram_addr
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	:
- *  Comments	:
- ************************************************************************************************************/
 
 int program_dummy_isp_sdram_addr(cam_data *cam)
 {
-	if(cam->capture.available_buf	<= DISABLE)
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
+	if (cam->capture.available_buf <= 0)
+		return -1;
 
-	cam->isp->isp_ccdc.reg.CCDC_SDR_ADDR	= cam->capture.frame[cam->capture.available_buf].buffer.m.offset;
-	return SUCCESS;
+	cam->isp->isp_ccdc.reg.CCDC_SDR_ADDR = cam->capture.frame[cam->capture.available_buf].buffer.m.offset;
+
+	return 0;
 }
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	program the ccdc sdram address.
- *  Comments	:  	In the programed sdram address the new frame from the sensor be filled.
- ************************************************************************************************************/
+
+/*
+ * Program the ccdc sdram address.
+ * In the programed sdram address the new frame from the sensor be filled.
+ */
 int isp_prg_sdram_addr(cam_data *cam)
 {
-	int	i;
-	unsigned int	load_address_base_index	= DISABLE;
+	int i;
+	unsigned int load_address_base_index = 0;
 	static struct timeval timestamp;
-	unsigned int	dummy_count	= DISABLE;
-	unsigned int	valid_buf	= DISABLE;
+	unsigned int dummy_count = 0;
+	unsigned int valid_buf = 0;
 	struct tm timecode;
 
 #ifndef CONFIG_CTRL_FRAME_RATE_FRM_SENSOR
@@ -381,269 +314,171 @@ int isp_prg_sdram_addr(cam_data *cam)
 	static struct timeval timestamp_rec;
 #endif
 
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
-/*
- * Take the current time stamp
- */
+	if (!cam)
+		return -1; 
+
+	/* Take the current time stamp */
 	do_gettimeofday(&timestamp);
 
 #ifndef CONFIG_CTRL_FRAME_RATE_FRM_SENSOR
-	if(timestamp_rec.tv_sec	== DISABLE && timestamp_rec.tv_usec == DISABLE)
-	{
+	if (!timestamp_rec.tv_sec && !timestamp_rec.tv_usec) 
 		do_gettimeofday(&timestamp_rec);
+
+
+	if (timestamp.tv_sec > timestamp_rec.tv_sec) {
+		current_fps = capture_frame_rate;
+		capture_frame_rate = DISABLE;
+		timestamp_rec = timestamp;
 	}
 
-	if (timestamp.tv_sec > timestamp_rec.tv_sec)
-	{
-		current_fps		= capture_frame_rate;
-		capture_frame_rate	= DISABLE;
-		timestamp_rec		= timestamp;
-	}
 	capture_frame_rate++;
 #endif
 
-	if(cam->task.bit.still	== ENABLE)
-	{
-		cam->isp->isp_ccdc.reg.CCDC_SDR_ADDR	= cam->still.phy_addr;
-	}else if(cam->task.bit.capture == ENABLE)
-	{
-
-		for(valid_buf = DISABLE,i = DISABLE;i< cam->capture.available_buf;i++)
-		{
-			if((cam->capture.frame[i].buffer.flags & 			\
-			(V4L2_BUF_FLAG_QUEUED |V4L2_BUF_FLAG_MAPPED)) == 		\
-			(V4L2_BUF_FLAG_QUEUED |V4L2_BUF_FLAG_MAPPED))
-			{
-				if(	(cam->capture.frame[i].buffer.timestamp.tv_sec < timestamp.tv_sec) ||	\
-					((cam->capture.frame[i].buffer.timestamp.tv_sec == timestamp.tv_sec) &&	\
-					(cam->capture.frame[i].buffer.timestamp.tv_usec <= timestamp.tv_usec)))
-				{
-					memcpy(&timestamp,&cam->capture.frame[i].buffer.timestamp,sizeof(struct timeval));
+	if (cam->task.bit.still	== ENABLE) {
+		cam->isp->isp_ccdc.reg.CCDC_SDR_ADDR = cam->still.phy_addr;
+	}
+	else if (cam->task.bit.capture == ENABLE) {
+		for (valid_buf = 0, i = 0; i < cam->capture.available_buf; i++) {
+			if ((cam->capture.frame[i].buffer.flags & (V4L2_BUF_FLAG_QUEUED | V4L2_BUF_FLAG_MAPPED)) == (V4L2_BUF_FLAG_QUEUED | V4L2_BUF_FLAG_MAPPED)) {
+				if ((cam->capture.frame[i].buffer.timestamp.tv_sec < timestamp.tv_sec) || ((cam->capture.frame[i].buffer.timestamp.tv_sec == timestamp.tv_sec) && (cam->capture.frame[i].buffer.timestamp.tv_usec <= timestamp.tv_usec))) {
+					memcpy(&timestamp, &cam->capture.frame[i].buffer.timestamp, sizeof(struct timeval));
 					load_address_base_index	= i;
 				}
 
-				if((cam->capture.frame[i].buffer.flags & V4L2_BUF_FLAG_DONE) == V4L2_BUF_FLAG_DONE)
-				{
+				if ((cam->capture.frame[i].buffer.flags & V4L2_BUF_FLAG_DONE) == V4L2_BUF_FLAG_DONE) {
 					valid_buf++;
 					wake_up_interruptible(&cam->capture.capture_frame_complete);
-
 				}
-
-			}else
-			{
+			}
+			else {
 				dummy_count++;
 			}
 		}
 
 #ifndef CONFIG_CTRL_FRAME_RATE_FRM_SENSOR
-		frame_skip_count	+= ((1000000*cam->capture.s_parm.parm.capture.			\
-					timeperframe.denominator)/current_fps);
-		if(frame_skip_count > 1000000)
-		{
+		frame_skip_count += ((1000000 * cam->capture.s_parm.parm.capture.timeperframe.denominator) / current_fps);
+		
+		if (frame_skip_count > 1000000)
 			frame_skip_count -=1000000;
-		}else
-		{
+		else
 			dummy_count	= cam->capture.available_buf;
-		}
+		
 #endif
 
-		if(dummy_count	== cam->capture.available_buf)
-		{
-			cam->isp->isp_ccdc.reg.CCDC_SDR_ADDR	= cam->capture.frame[cam->capture.available_buf].	\
-								  buffer.m.offset;
-			cam->capture.using_buf	= cam->capture.available_buf;
-		}else
-		{
+		if (dummy_count == cam->capture.available_buf) {
+			cam->isp->isp_ccdc.reg.CCDC_SDR_ADDR = cam->capture.frame[cam->capture.available_buf].buffer.m.offset;
+			cam->capture.using_buf = cam->capture.available_buf;
+		}
+		else {
 			cam->capture.buffer_sequence++;
-/*
- * Fill the New time stamp
- */
+
+			/* Fill the New time stamp */
 			do_gettimeofday(&cam->capture.frame[load_address_base_index].buffer.timestamp);
 
-			cam->isp->isp_ccdc.reg.CCDC_SDR_ADDR	= cam->capture.frame[load_address_base_index].	\
-								  buffer.m.offset;
+			cam->isp->isp_ccdc.reg.CCDC_SDR_ADDR = cam->capture.frame[load_address_base_index].buffer.m.offset;
 			cam->capture.using_buf	= load_address_base_index;
-			cam->capture.frame[load_address_base_index].buffer.flags	|= V4L2_BUF_FLAG_DONE;
+			cam->capture.frame[load_address_base_index].buffer.flags |= V4L2_BUF_FLAG_DONE;
 
 			time_to_tm(cam->capture.frame[load_address_base_index].buffer.timestamp.tv_sec,DISABLE, &timecode);
-			cam->capture.frame[load_address_base_index].buffer.timecode.seconds	= timecode.tm_sec;
-			cam->capture.frame[load_address_base_index].buffer.timecode.minutes	= timecode.tm_min;
-			cam->capture.frame[load_address_base_index].buffer.timecode.hours	= timecode.tm_hour;
-			cam->capture.frame[load_address_base_index].buffer.timecode.type	= V4L2_TC_TYPE_30FPS;
-			cam->capture.frame[load_address_base_index].buffer.timecode.flags	= V4L2_TC_FLAG_COLORFRAME;
-			cam->capture.frame[load_address_base_index]	\
-				.buffer.timecode.frames				= cam->capture.buffer_sequence;
-			cam->capture.frame[load_address_base_index]	\
-				.buffer.sequence				= cam->capture.buffer_sequence;
+
+			cam->capture.frame[load_address_base_index].buffer.timecode.seconds = timecode.tm_sec;
+			cam->capture.frame[load_address_base_index].buffer.timecode.minutes = timecode.tm_min;
+			cam->capture.frame[load_address_base_index].buffer.timecode.hours = timecode.tm_hour;
+			cam->capture.frame[load_address_base_index].buffer.timecode.type = V4L2_TC_TYPE_30FPS;
+			cam->capture.frame[load_address_base_index].buffer.timecode.flags = V4L2_TC_FLAG_COLORFRAME;
+			cam->capture.frame[load_address_base_index].buffer.timecode.frames = cam->capture.buffer_sequence;
+			cam->capture.frame[load_address_base_index].buffer.sequence = cam->capture.buffer_sequence;
 		}
-/*
- * Note the valid buffers available in the pool
- */
+
+		/* Note the valid buffers available in the pool */
 		cam->capture.valid_buf	= valid_buf;
 	}
 	
 	return SUCCESS;
 }
 
-
 int disable_isp_irq0(cam_data *cam)
 {
-	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE	= DISABLE;
-	return SUCCESS;
+	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE = 0;
+	return 0;
 }
 
 int isp_configure(cam_data *cam)
 {
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
+	if (!cam)
+		return -1;
+
+	cam->isp->isp_main.reg.isp_ctrl.ISP_CTRL = 0;
+	cam->isp->isp_main.reg.isp_ctrl.bit.ccdc_clk_en = 1;
+	cam->isp->isp_main.reg.isp_ctrl.bit.par_bridge = ISPM_ISP_CTRL_MEM_ORDER_MSB_LSB;
+
+	cam->isp->isp_main.reg.isp_ctrl.bit.par_ser_clk_sel = 0;
+	cam->isp->isp_main.reg.isp_ctrl.bit.ccdc_ram_en	= 1;
+	cam->isp->isp_main.reg.isp_ctrl.bit.sync_detect	= ISPM_ISP_CTRL_SYNC_DETECT_VS_FALL;
+	cam->isp->isp_main.reg.isp_ctrl.bit.shift = ISPM_ISP_CTRL_BIT_SHIFT_CAMEXT13_2_CAM11_0;
+
+
+	cam->isp->isp_ccdc.reg.ccdc_hsize_off.bit.lnofst = cam->capture.v2f.fmt.pix.bytesperline;
+
+	cam->isp->isp_ccdc.reg.ccdc_cfg.bit.vdlc = 1;
+
+	cam->isp->isp_ccdc.reg.ccdc_syn_mode.bit.vdhden = 1;
+	cam->isp->isp_ccdc.reg.ccdc_syn_mode.bit.datsiz	= 0x0;
+	cam->isp->isp_ccdc.reg.ccdc_syn_mode.bit.inpmod	= ISP_CCDC_CCDC_SYNC_MODE_IMPMOD_YUV_16BIT;
+	cam->isp->isp_ccdc.reg.ccdc_syn_mode.bit.wen = 1;
+
+	cam->isp->isp_ccdc.reg.ccdc_horz_info.bit.nph = cam->capture.v2f.fmt.pix.width - 1;
+	cam->isp->isp_ccdc.reg.ccdc_vert_start.bit.slv0 = 0;
+	cam->isp->isp_ccdc.reg.ccdc_vert_start.bit.slv1	= 0;
+
+	switch(cam->cam_sensor.fmt.fmt.pix.pixelformat)	{
+	case V4L2_PIX_FMT_YUV420:
+		cam->isp->isp_ccdc.reg.ccdc_vert_lines.bit.nlv = ((cam->capture.v2f.fmt.pix.height * 3) / 4) - 1;
+		break;
+
+	default:
+		cam->isp->isp_ccdc.reg.ccdc_vert_lines.bit.nlv = cam->capture.v2f.fmt.pix.height -1;
+		break;
 	}
 
-	cam->isp->isp_main.reg.isp_ctrl.ISP_CTRL		= DISABLE;
-	cam->isp->isp_main.reg.isp_ctrl.bit.ccdc_clk_en		= ENABLE;
-	cam->isp->isp_main.reg.isp_ctrl.bit.par_bridge		= ISPM_ISP_CTRL_MEM_ORDER_MSB_LSB;
-
-	cam->isp->isp_main.reg.isp_ctrl.bit.par_ser_clk_sel	= DISABLE;
-	cam->isp->isp_main.reg.isp_ctrl.bit.ccdc_ram_en		= ENABLE;
-	cam->isp->isp_main.reg.isp_ctrl.bit.sync_detect		= ISPM_ISP_CTRL_SYNC_DETECT_VS_FALL;
-	cam->isp->isp_main.reg.isp_ctrl.bit.shift		= ISPM_ISP_CTRL_BIT_SHIFT_CAMEXT13_2_CAM11_0;
-
-
-	cam->isp->isp_ccdc.reg.ccdc_hsize_off.bit.lnofst	= cam->capture.v2f.fmt.pix.bytesperline;
-
-	cam->isp->isp_ccdc.reg.ccdc_cfg.bit.vdlc		= ENABLE;
-
-	cam->isp->isp_ccdc.reg.ccdc_syn_mode.bit.vdhden		= ENABLE;
-	cam->isp->isp_ccdc.reg.ccdc_syn_mode.bit.datsiz		= 0x0;
-	cam->isp->isp_ccdc.reg.ccdc_syn_mode.bit.inpmod		= ISP_CCDC_CCDC_SYNC_MODE_IMPMOD_YUV_16BIT;
-	cam->isp->isp_ccdc.reg.ccdc_syn_mode.bit.wen		= ENABLE;
-
-	cam->isp->isp_ccdc.reg.ccdc_horz_info.bit.nph		= cam->capture.v2f.fmt.pix.width -1;
-	cam->isp->isp_ccdc.reg.ccdc_vert_start.bit.slv0		= DISABLE;
-	cam->isp->isp_ccdc.reg.ccdc_vert_start.bit.slv1		= DISABLE;
-
-	switch(cam->cam_sensor.fmt.fmt.pix.pixelformat)	
-	{
-		case V4L2_PIX_FMT_YUV420:
-		{
-			cam->isp->isp_ccdc.reg.ccdc_vert_lines.bit.nlv	= (cam->capture.v2f.fmt.pix.height*3/4) -1;
-		}break;
-
-		default:
-		{
-			cam->isp->isp_ccdc.reg.ccdc_vert_lines.bit.nlv	= cam->capture.v2f.fmt.pix.height -1;
-		}break;
-	}
-	return SUCCESS;
+	return 0;
 }
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	After configuration isp irq0 is enabled
- *  Comments	:  	
- ************************************************************************************************************/
+
 int enable_isp_irq0(cam_data *cam)
 {
-	cam->isp->isp_ccdc.reg.ccdc_vdint.bit.vdint0		= cam->capture.v2f.fmt.pix.height -1;
-	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE	= DISABLE;
-	cam->isp->isp_main.reg.isp_irq0enable.bit.ccdc_vd0_irq	= ENABLE;
+	cam->isp->isp_ccdc.reg.ccdc_vdint.bit.vdint0 = cam->capture.v2f.fmt.pix.height - 1;
+	cam->isp->isp_main.reg.isp_irq0enable.ISP_IRQ0ENABLE = 0;
+	cam->isp->isp_main.reg.isp_irq0enable.bit.ccdc_vd0_irq = 1;
 
 	return SUCCESS;
 }
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	enable the ccdc unit.
- *  Comments	:  	Once ccdc unit is enabled it will copy the frame into programmed sdram address.
- ************************************************************************************************************/
+
 int enable_ccdc(cam_data *cam)
 {
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
-	cam->isp->isp_ccdc.reg.ccdc_pcr.bit.enable		= ENABLE;
-	return SUCCESS;
+	if (!cam)
+		return -1;
+
+	cam->isp->isp_ccdc.reg.ccdc_pcr.bit.enable = 1;
+
+	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	disable_ccdc
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	disable ccdc unit
- *  Comments	:  	
- ************************************************************************************************************/
 int disable_ccdc(cam_data *cam)
 {
-	if(cam == NULL)
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
-	cam->isp->isp_ccdc.reg.ccdc_pcr.bit.enable		= DISABLE;
-	return SUCCESS;
+	if (!cam)
+		return -1;
+
+	cam->isp->isp_ccdc.reg.ccdc_pcr.bit.enable = 0;
+
+	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE	
- *  Name	:	init_cam_isp_ccdc
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
-  *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	init routine of ccdc done here
- *  Comments	:  	
- ************************************************************************************************************/
 int init_cam_isp_ccdc(cam_data *cam)
 {
 	if (!cam)
 		return -EINVAL;
 
-/*
- * map the physical address of isp registers 
- * to kernel virtual address
- */
-#if 0
-	ret_val	= omap_isp_base_struct(cam,CREATE_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		printk(KERN_ERR "Failed to map the camera isp registers\n");
-		TRACE_ERR_AND_RET(FAIL);		
-	}
-#endif
+	/* map physical address of isp registers to kernel virtual address */
 	if (omap_isp_base_struct(cam, SET_ADDRESS)) {
 		printk(KERN_ERR "Failed to map the camera isp registers\n");
 		return -1;
@@ -653,9 +488,8 @@ int init_cam_isp_ccdc(cam_data *cam)
 		if (isp_set_xclk(cam, cam_mclk, 0, NULL))
 			return -1;
 	}
-/*
- * Call back function for changing the mclk is assinged here
- */
+
+	/* Call back function for changing the mclk is assinged here */
 	cam->modify_mclk_to_sensor = mclk_to_sensor;
 
 	return 0;

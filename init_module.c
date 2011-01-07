@@ -64,6 +64,8 @@ static int init_plat_irq(cam_data *cam)
 		return -1;
 	} 
 	
+	printk(KERN_ALERT "omap3cameraisp irq = %d\n", cam->irq);
+
 	if (request_irq(cam->irq, omap34xx_isp_isr, IRQF_SHARED, 
 			"omap3cameraisp", cam)) {
 		printk(KERN_ALERT "init_plat_irq: request_irq failed\n");

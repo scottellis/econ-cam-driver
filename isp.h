@@ -66,26 +66,26 @@
 struct isp_irq
 {
 	volatile unsigned int reserved0				:8;
-	volatile unsigned int ccdc_vd0_irq				:1;
-	volatile unsigned int ccdc_vd1_irq				:1;
-	volatile unsigned int ccdc_vd2_irq				:1;
-	volatile unsigned int ccdc_err_irq				:1;
-	volatile unsigned int h3a_af_done_irq				:1;
+	volatile unsigned int ccdc_vd0_irq			:1;
+	volatile unsigned int ccdc_vd1_irq			:1;
+	volatile unsigned int ccdc_vd2_irq			:1;
+	volatile unsigned int ccdc_err_irq			:1;
+	volatile unsigned int h3a_af_done_irq			:1;
 	volatile unsigned int h3a_awb_done_irq			:1;
 	volatile unsigned int reserved1				:2;
-	volatile unsigned int hist_done_irq				:1;
-	volatile unsigned int ccdc_lsc_done				:1;
-	volatile unsigned int ccdc_lsc_prefectch_completed		:1;
+	volatile unsigned int hist_done_irq			:1;
+	volatile unsigned int ccdc_lsc_done			:1;
+	volatile unsigned int ccdc_lsc_prefectch_completed	:1;
 	volatile unsigned int ccdc_lsc_prefectch_error		:1;
-	volatile unsigned int prv_done_irq				:1;
+	volatile unsigned int prv_done_irq			:1;
 	volatile unsigned int cbuff_irq				:1;
 	volatile unsigned int reserved2				:2;
-	volatile unsigned int rsz_done_irq				:1;
-	volatile unsigned int ovf_irq					:1;
+	volatile unsigned int rsz_done_irq			:1;
+	volatile unsigned int ovf_irq				:1;
 	volatile unsigned int reserved3				:2;
-	volatile unsigned int mmu_err_irq				:1;
-	volatile unsigned int ocp_err_irq				:1;
-	volatile unsigned int sec_err_irq				:1;
+	volatile unsigned int mmu_err_irq			:1;
+	volatile unsigned int ocp_err_irq			:1;
+	volatile unsigned int sec_err_irq			:1;
 	volatile unsigned int hs_vs_irq				:1;					
 };
 

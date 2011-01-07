@@ -218,53 +218,44 @@ int omap_v4l2_read(struct file *file, char *buf, size_t count, loff_t * ppos)
 	unsigned int wait_event_ret_val	= DISABLE;
 
 
-	ret_val	= v4l2_base_struct(&cam,GET_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	ret_val	= v4l2_base_struct(&cam, GET_ADDRESS);
+	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 		printk(KERN_ERR "Failed to register the camera device\n");
 		TRACE_ERR_AND_RET(FAIL);		
 	}
 
-	if(cam->task.bit.capture	== ENABLE)
-	{
+	if(cam->task.bit.capture == ENABLE) {
 		TRACE_ERR_AND_RET(-EBUSY);	
 	}
 
-	cam->task.bit.still	= ENABLE;
+	cam->task.bit.still = ENABLE;
 
-/*
- * configure the sensor
- */
-	if(cam->cam_sensor.config_dim)
-	{
+	/* configure the sensor */
+	if (cam->cam_sensor.config_dim) {
 		ret_val	= cam->cam_sensor.config_dim(cam);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
+		if(CHECK_IN_FAIL_LIMIT(ret_val)) {
 			goto exit;
 		}
-	}else
-	{
+	}
+	else {
 		goto exit;
 	}
-/*
- * reset the isp 
- */
+
+	/* reset the isp */
 
 	ret_val	= isp_reset(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+
+	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 		goto exit;
 	}
 
 	ret_val	= isp_configure(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+
+	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 		goto exit;
 	}
 
-/*
- * Get the memory from the kernel
- */
+	/* Get the memory from the kernel */
 
 	if (get_free_phy_mem(cam->capture.v2f.fmt.pix.sizeimage,
 				&cam->still.phy_addr, &cam->still.vir_addr))
@@ -272,104 +263,91 @@ int omap_v4l2_read(struct file *file, char *buf, size_t count, loff_t * ppos)
 
 
 	ret_val	= isp_prg_sdram_addr(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 		goto exit;
 	}
 
-	cam->still.frame_count	= DISABLE;
-	cam->still.wait_queue_head_t_dma_frame_complete_still	= DISABLE;
+	cam->still.frame_count = DISABLE;
+	cam->still.wait_queue_head_t_dma_frame_complete_still = DISABLE;
 
-/*
- * Enable sensor strobe
- */
-	if(cam->cam_sensor.sens_strobe)
-	{
-		cam->ctrl.id	= V4L2_SENS_FLASH_STROBE;
+	/* Enable sensor strobe */
+	if (cam->cam_sensor.sens_strobe) {
+		cam->ctrl.id = V4L2_SENS_FLASH_STROBE;
 		cam->ctrl.value	= ENABLE;
 		ret_val	= cam->cam_sensor.sens_strobe(cam);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
+		
+		if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 			goto exit;
 		}
-
 	}
 
-
 	ret_val	= enable_ccdc(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+
+	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 		goto exit;
 	}
 
 	ret_val	= enable_isp_irq0(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+
+	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 		goto exit;
 	}
-/*
- * Wait for interrupt from the isp interrupt service routine
- */
-	if(cam->still.wait_queue_head_t_dma_frame_complete_still	== DISABLE)
-	{
-		wait_event_ret_val	= wait_event_interruptible_timeout(cam->still.dma_frame_complete_still,		\
-					      cam->still.frame_count >= STILL_IMAGE_CAPTURE_FRAME_NUMBER,		\
-						10 * HZ);
+
+	/* Wait for interrupt from the isp interrupt service routine */
+	if (cam->still.wait_queue_head_t_dma_frame_complete_still == 0) {
+		wait_event_ret_val = wait_event_interruptible_timeout(
+					cam->still.dma_frame_complete_still, 
+					cam->still.frame_count >= STILL_IMAGE_CAPTURE_FRAME_NUMBER,
+					10 * HZ);
 	}
 	
-/*
- * Disable sensor strobe
- */
-	if(cam->cam_sensor.sens_strobe)
-	{
-		cam->ctrl.id	= V4L2_SENS_FLASH_STROBE;
-		cam->ctrl.value	= DISABLE;
+	/* Disable sensor strobe */
+	if (cam->cam_sensor.sens_strobe) {
+		cam->ctrl.id = V4L2_SENS_FLASH_STROBE;
+		cam->ctrl.value	= 0;
 		ret_val	= cam->cam_sensor.sens_strobe(cam);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
+		
+		if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 			goto exit;
 		}
-
 	}
 
 	ret_val	= disable_ccdc(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+
+	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 		goto exit;
 	}
 
 	ret_val	= disable_isp_irq0(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (CHECK_IN_FAIL_LIMIT(ret_val)) {
 		goto exit;
 	}
 
-	if(wait_event_ret_val == DISABLE)
-	{
-		printk(KERN_DEBUG "wait_event_interruptible_timeout %s %d \n",__FUNCTION__,__LINE__);	
-		printk(KERN_ERR "omap_v4l_read timeout - Frame count %d\n",cam->still.frame_count);
+	if (wait_event_ret_val == 0) {
+		printk(KERN_DEBUG "wait_event_interruptible_timeout %s %d \n", __FUNCTION__, __LINE__);	
+		printk(KERN_ERR "omap_v4l_read timeout - Frame count %d\n", cam->still.frame_count);
 
-		cam->task.bit.still = DISABLE;
+		cam->task.bit.still = 0;
 	
 		if (free_phy_mem(cam->still.phy_addr))
 			goto exit;
 
 		return -ETIME;
 	}
+
 	err = copy_to_user(buf,(unsigned char *)cam->still.vir_addr, cam->capture.v2f.fmt.pix.sizeimage);
 
 	if (free_phy_mem(cam->still.phy_addr))
 		goto exit;
 
-	cam->task.bit.still	= DISABLE;
+	cam->task.bit.still = 0;
 
-	return (cam->capture.v2f.fmt.pix.sizeimage);
+	return cam->capture.v2f.fmt.pix.sizeimage;
 
-	exit:
-	{
-		cam->task.bit.still	= DISABLE;
-		return 0;
-	}
+exit:
+	cam->task.bit.still = 0;
+
+	return 0;
 }
 
 /************************************************************************************************************
@@ -385,10 +363,9 @@ int omap_v4l2_read(struct file *file, char *buf, size_t count, loff_t * ppos)
  ************************************************************************************************************/
 int omap_mmap(struct file *file, struct vm_area_struct *vma)
 {
-	#define VGA_IMAGE_SIZE	(640 *480 *2)
+#define VGA_IMAGE_SIZE	(640 *480 *2)
 
 	unsigned long size;
-	int res = DISABLE;
 
 	pr_debug("pgoff=0x%lx, start=0x%lx, end=0x%lx\n",vma->vm_pgoff, vma->vm_start, vma->vm_end);
 
@@ -396,26 +373,19 @@ int omap_mmap(struct file *file, struct vm_area_struct *vma)
 
 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
 
-	if(size	 >= VGA_IMAGE_SIZE)
-	{
+	if (size >= VGA_IMAGE_SIZE)
 		vma->vm_page_prot = PAGE_SHARED;
-	}else
-	{
+	else
 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-	}
 
-	if (remap_pfn_range(vma, vma->vm_start,vma->vm_pgoff, size, vma->vm_page_prot))
-	{
+	if (remap_pfn_range(vma, vma->vm_start,vma->vm_pgoff, size, vma->vm_page_prot)) {
 		printk(KERN_ERR "omap_mmap: remap_pfn_range failed\n");
-		res = -ENOBUFS;
-		goto omap_mmap_exit;
+		return -ENOBUFS;
 	}
 
 	vma->vm_flags |= VM_RESERVED;
-	omap_mmap_exit:
-	{
-		return res;
-	}
+
+	return 0;
 }
 
 /************************************************************************************************************
