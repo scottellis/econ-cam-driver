@@ -26,7 +26,7 @@ else
 endif
 
 
-deploy:
+install:
 	sudo cp $(DRIVERNAME).ko /exports/overo/home/root
 
 clean:
