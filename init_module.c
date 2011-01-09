@@ -145,11 +145,8 @@ static int init_omap_hwr(cam_data *cam)
 static int isp_probe_late_init(cam_data *cam)
 {
 	int ret_val;
-	int ret;
 
-	ret_val	= init_v4l2_base_struct(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (init_v4l2_base_struct(cam) < 0) {
 		printk(KERN_ERR "Failed to initialize camera device\n");
 		return -1;
 	}
@@ -177,48 +174,43 @@ static int isp_probe_late_init(cam_data *cam)
 		return -1;
 	}
 
-	ret_val	= register_sensor_bus(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	ret_val = register_sensor_bus(cam);
+	if (ret_val < 0) {
 		TRACE_ERR_AND_RET(ret_val);
 	}
 
-	if(cam->cam_sensor.init)
-	{
+	if (cam->cam_sensor.init) {
 		ret_val	= cam->cam_sensor.init(cam);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
+		if (ret_val < 0)
 			return ret_val;
-		}
 	}
 
 #if defined(CONFIG_HAVE_LED_FLASH)
 	ret_val	= register_flash_driver(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (ret_val < 0)
 		return ret_val;
-	}
+
 #endif
-	if(cam->cam_flash.init)
-	{
+	if (cam->cam_flash.init) {
 		ret_val	= cam->cam_flash.init(cam);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
+		
+		if (ret_val < 0)
 			return ret_val;
-		}
 	}
 
-	ret = video_register_device(cam->video_dev, VFL_TYPE_GRABBER, video_nr);
-	if (ret	== FAIL)
-	{
+	ret_val = video_register_device(cam->video_dev, VFL_TYPE_GRABBER, 
+					video_nr);
+
+	if (ret_val < 0) {
 		video_device_release(cam->video_dev);
-		cam->video_dev	= NULL;
+		cam->video_dev = NULL;
 
 		v4l2_base_struct(&cam, MAKE_ADDRESS_INVALID);
 		printk(KERN_ERR "video_register_device failed\n");
-		TRACE_ERR_AND_RET(ret_val);
+		return -1;
 	}
-	return SUCCESS;
+
+	return 0;
 }
 
 static int isp_probe(struct platform_device *pdev)
@@ -227,10 +219,10 @@ static int isp_probe(struct platform_device *pdev)
 	cam_data *cam;
 
 	ret_val	= v4l2_base_struct(&cam, GET_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+
+	if (ret_val < 0) {
 		printk(KERN_ERR "Failed to register the camera device\n");
-		TRACE_ERR_AND_RET(FAIL);
+		return ret_val;
 	}
 
 	cam->pdev = pdev;
@@ -260,10 +252,10 @@ static __init int cam_driver_init(void)
 	memset(cam, 0, sizeof(cam_data));
 
 	ret_val	= v4l2_base_struct(&cam, SET_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	
+	if (ret_val < 0) {
 		printk(KERN_ERR "Failed to register the camera device\n");
-		TRACE_ERR_AND_RET(FAIL);
+		return -1;
 	}
 
 	if (init_phy_mem())
@@ -277,7 +269,6 @@ static __init int cam_driver_init(void)
 		printk(KERN_ALERT "platform_driver_register failed\n");
 		return -1;
 	}
-		
 
 	if (isp_probe_late_init(cam)) {
 		platform_driver_unregister(&cam->omap3isp_driver);

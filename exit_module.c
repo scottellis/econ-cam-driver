@@ -35,82 +35,29 @@
 #include "v4l2_driver_base.h"
 #include "fn_protype.h"
 
-
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
- *  Name	:	all_clk_disable	
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *  Description	: 	
- *  Comments	:  	
- ************************************************************************************************************/
-int all_clk_disable(cam_data *cam)
+static void all_clk_disable(cam_data *cam)
 {
-	if(!(IS_ERR(cam->cam_mclk)))
-	{
+	if (!(IS_ERR(cam->cam_mclk)))
 		clk_disable(cam->cam_mclk);
-	}
-
-	if(!(IS_ERR(cam->cam_ick)))
-	{
+	
+	if (!(IS_ERR(cam->cam_ick)))
 		clk_disable(cam->cam_ick);
-	}
-	cam->clk_enable	= DISABLE;
-
-	return SUCCESS;
+	
+	cam->clk_enable	= 0;
 }
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
- *  Name	:	all_clk_unregister
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *  Description	: 	
- *  Comments	:  	
- ************************************************************************************************************/
-int all_clk_unregister(cam_data *cam)
+
+static void all_clk_unregister(cam_data *cam)
 {
-	if(!(IS_ERR(cam->cam_ick)))
-	{
+	if (!(IS_ERR(cam->cam_ick)))
 		clk_put(cam->cam_ick);
-	}
-
-	if(!(IS_ERR(cam->cam_mclk)))
-	{
+	
+	if (!(IS_ERR(cam->cam_mclk)))
 		clk_put(cam->cam_mclk);
-	}
-
-	return SUCCESS;
 }
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	
- *  Name	:	free_all_irq
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *  Description	: 	
- *  Comments	:  	
- ************************************************************************************************************/
-int free_all_irq(cam_data *cam)
+
+static void free_all_irq(cam_data *cam)
 {
 	free_irq(cam->irq,cam);
-	return SUCCESS;
 }
 
 static int exit_omap_hwr(cam_data *cam)
@@ -124,75 +71,33 @@ static int exit_omap_hwr(cam_data *cam)
 	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	:	OMAP_V4L2_BASE
- *  Name	:	isp_remove
- *  Parameter1	:	struct platform_device *pdev
- *  Returns	:	int	- On sucess returns 0
- *  				- On Failure a negative number be returned
- *  Description	: 	
- *  Comments	:  	
- ************************************************************************************************************/
 int isp_remove(struct platform_device *pdev)
 {
-
-	int ret_val;
 	cam_data *cam;
-/*
- * register the camera base pointer
- */
 
-	ret_val	= v4l2_base_struct(&cam,GET_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		printk(KERN_ERR "Failed to register the camera device\n");
-		TRACE_ERR_AND_RET(FAIL);
+	if (v4l2_base_struct(&cam, GET_ADDRESS) < 0) {
+		printk(KERN_ERR "isp_remove error\n");
+		return -1;
 	}
 
-	if(cam->cam_sensor.exit)
-	{
-		ret_val	= cam->cam_sensor.exit(cam);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
-			TRACE_ERR_AND_RET(FAIL);
-		}
+	if (cam->cam_sensor.exit) {
+		if (cam->cam_sensor.exit(cam) < 0)
+			return -1;
 	}
 
-	if(cam->cam_flash.exit)
-	{
-		ret_val	= cam->cam_flash.exit(cam);
-		if(CHECK_IN_FAIL_LIMIT(ret_val))
-		{
-			TRACE_ERR_AND_RET(FAIL);
-		}
+	if(cam->cam_flash.exit) {
+		if (cam->cam_flash.exit(cam) < 0)
+			return -1;
 	}
 
-	ret_val	= disable_isp_irq0(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		TRACE_ERR_AND_RET(FAIL);
-		
-	}
+	if (disable_isp_irq0(cam) < 0)
+		return -1;
 
-	ret_val	= free_all_irq(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		TRACE_ERR_AND_RET(FAIL);
-		
-	}
+	free_all_irq(cam);
 
-	ret_val	= all_clk_disable(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
+	all_clk_disable(cam);
 
-	ret_val	= all_clk_unregister(cam);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
-		TRACE_ERR_AND_RET(FAIL);
-	}
+	all_clk_unregister(cam);
 
 	if (exit_omap_hwr(cam))
 		return -1;
@@ -200,7 +105,7 @@ int isp_remove(struct platform_device *pdev)
 	video_unregister_device(cam->video_dev);
 //	video_device_release(cam->video_dev);
 
-	return SUCCESS;
+	return 0;
 }
 
 /************************************************************************************************************
@@ -215,28 +120,19 @@ int isp_remove(struct platform_device *pdev)
 
 static void __exit omap_v4l2_camera_driver_exit(void)
 {
-	int ret_val;
 	cam_data *cam;
 
-/*
- * TODO:
- * 	Release the hardware resource properly
- */
-
-	ret_val	= v4l2_base_struct(&cam,GET_ADDRESS);
-	if(CHECK_IN_FAIL_LIMIT(ret_val))
-	{
+	if (v4l2_base_struct(&cam, GET_ADDRESS) < 0) {
 		printk(KERN_ERR "Failed to get the camera base address\n");
-		return ;		
+		return;
 	}
 
 	platform_driver_unregister(&cam->omap3isp_driver);
 
 	printk(KERN_INFO MODULE_NAME ":unregistering v4l2 camera driver\n");
 
-	cam->video_dev	= NULL;
-	v4l2_base_struct(&cam,MAKE_ADDRESS_INVALID);
+	cam->video_dev = NULL;
 
-	return ;
+	v4l2_base_struct(&cam, MAKE_ADDRESS_INVALID);
 }
 module_exit(omap_v4l2_camera_driver_exit);

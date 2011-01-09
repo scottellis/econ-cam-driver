@@ -65,13 +65,7 @@ int sensor_driver_init(cam_data *cam);
  */
 int lm3553_exit(cam_data *cam);
 
-/*
- * omap_hwr_base.c
- */
-/*
-int init_omap_hwr(cam_data *cam);
-int exit_omap_hwr(cam_data *cam);
-*/
+
 /*
  * omap_camera_interface.c
  */
