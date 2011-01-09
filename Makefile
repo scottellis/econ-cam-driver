@@ -13,7 +13,8 @@ ifneq ($(KERNELRELEASE),)
 				omap_v4l2_ioctl_fops.o \
 				exit_module.o \
 				error.o \
-				phy_mem.o
+				phy_mem.o \
+				ov3640_firmware.o
 
 else
     PWD := $(shell pwd)
