@@ -185,14 +185,14 @@ static int ov3640_init_config(cam_data *cam)
  */
 static int configure_dimension_change(cam_data *cam)
 {
-	static int width,height,old_logic_case;
+	static int width, height, old_logic_case;
 	unsigned int logic_case;
 
 	if ((cam->cam_sensor.fmt.fmt.pix.width <= MODE_XGA_WIDTH) &&
 		(cam->cam_sensor.fmt.fmt.pix.height <= MODE_XGA_HEIGHT))
 		logic_case = 1;
 	else
-		logic_case	= 2;
+		logic_case = 2;
 
 
 	if (old_logic_case == logic_case) {
@@ -437,62 +437,47 @@ static int ov3640_crop(cam_data *cam)
 	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_04	
- *  Name	:	ov3640_brightness
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer 	
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	Image brightness from the sensor can be increased (or) decrease
- *  Comments	:  	
- ************************************************************************************************************/
 static int ov3640_brightness(cam_data *cam)
 {
+	unsigned char val;
+
 	/*
 	 * Value must be in the range of 
 	 * -0x30  0x0  0x30
 	 *  -48   0   +48
 	 */
-	unsigned char reg_value;
+
 
 	printk(KERN_DEBUG "Brightness Value is %d\n", cam->ctrl.value);
 
 	switch (cam->cam_sensor.cmd_to_sensor) {
 	case GET_DATA_FRM_SENSOR:
-		ov3640_read_reg(0x3354,&reg_value);
+		ov3640_read_reg(0x335e, &val);
 
-		if (reg_value == 0x08) {
-			ov3640_read_reg(0x335e,&reg_value);
-			cam->ctrl.value	= -reg_value;
-		}
-		else {
-			ov3640_read_reg(0x335e,&reg_value);
-			cam->ctrl.value	= reg_value;
-		}
-		
-		if (cam->ctrl.value > 48)
-			cam->ctrl.value = 48;
-		else if (cam->ctrl.value < -48)
-			cam->ctrl.value = -48;
+		if (val > 48)
+			val = 48;
+
+		cam->ctrl.value	= val;
+
+		/* get the sign */
+		ov3640_read_reg(0x3354, &val);
+
+		if (val == 0x08)
+			cam->ctrl.value	*= -1;
+
 		
 		break;
 
 	case SET_DATA_TO_SENSOR:
 		if (cam->ctrl.value >= 0) {
-			ov3640_write_reg(0x335e,0xFF & cam->ctrl.value);
-			ov3640_write_reg(0x3355,0x04);
-			ov3640_write_reg(0x3354,0x01);
+			ov3640_write_reg(0x335e, 0xFF & cam->ctrl.value);
+			ov3640_write_reg(0x3355, 0x04);
+			ov3640_write_reg(0x3354, 0x01);
 		}
 		else {
-			ov3640_write_reg(0x335e,0xFF & -cam->ctrl.value);
-			ov3640_write_reg(0x3355,0x04);
-			ov3640_write_reg(0x3354,0x08);
+			ov3640_write_reg(0x335e, 0xFF & -cam->ctrl.value);
+			ov3640_write_reg(0x3355, 0x04);
+			ov3640_write_reg(0x3354, 0x08);
 		}
 
 		break;
@@ -500,7 +485,8 @@ static int ov3640_brightness(cam_data *cam)
 	case QUERY_DATA_FRM_SENSOR:
 		cam->cam_sensor.qctrl.id = V4L2_CID_BRIGHTNESS;
 		cam->cam_sensor.qctrl.type = V4L2_CTRL_TYPE_INTEGER;
-		strncpy(cam->cam_sensor.qctrl.name, "Brightness", strlen("Brightness"));
+		strncpy(cam->cam_sensor.qctrl.name, "Brightness", 
+			strlen("Brightness"));
 		cam->cam_sensor.qctrl.minimum = -48;
 		cam->cam_sensor.qctrl.maximum = 48;
 		cam->cam_sensor.qctrl.step = 1;
@@ -521,20 +507,21 @@ static int ov3640_brightness(cam_data *cam)
  */  			
 static int ov3640_exposure(cam_data *cam)
 {
+	unsigned char val;
+
 	/*
 	 * Histogram-based Algorithm
 	 * Value must be in the range of 
 	 * 0x38 - 0x88
 	 *  -40 - +40
 	 */
-	unsigned char reg_value;
 
 	printk(KERN_DEBUG "ov3640_exposure %d\n",cam->ctrl.value);
 
 	switch (cam->cam_sensor.cmd_to_sensor) {
 	case GET_DATA_FRM_SENSOR:
-		ov3640_read_reg(0x3018, &reg_value);
-		cam->ctrl.value	= reg_value -0x80;
+		ov3640_read_reg(0x3018, &val);
+		cam->ctrl.value	= val -0x80;
 		
 		if (cam->ctrl.value > 40)
 			cam->ctrl.value = 40;
@@ -575,7 +562,7 @@ static int ov3640_exposure(cam_data *cam)
 
 static int ov3640_sharpness(cam_data *cam)
 {
-	unsigned char reg;
+	unsigned char val;
 
 	/* 
 	 * Value must be in the range of 
@@ -583,12 +570,12 @@ static int ov3640_sharpness(cam_data *cam)
  	*  -3   0   +3
  	*/
 
-	printk(KERN_DEBUG "ov3640_sharpness %d\n",cam->ctrl.value);
+	printk(KERN_DEBUG "ov3640_sharpness %d\n", cam->ctrl.value);
 
 	switch(cam->cam_sensor.cmd_to_sensor) {
 	case GET_DATA_FRM_SENSOR:
-		ov3640_read_reg(0x332d, &reg);
-		cam->ctrl.value = reg - 0x45;
+		ov3640_read_reg(0x332d, &val);
+		cam->ctrl.value = val - 0x45;
 
 		if (cam->ctrl.value > 3)
 			cam->ctrl.value = 3;
@@ -628,365 +615,278 @@ static int ov3640_sharpness(cam_data *cam)
 	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_07
- *  Name	:	ov3640_effects
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
+/*
  *  Description	: 	Camera effects supported by the sensor  	
  *  Comments	:  	Supported effects by the sensor are Sepia,Monochrome,Negative,Bluish,Greenish
  *  			and Yellowish
- ************************************************************************************************************/
-
-int ov3640_effects(cam_data *cam)
-{
-/*
- * Value must be in the range of 
- * 0 to 7
- *
- * 	Normal			0
- * 	Sepia(antique)		1
- * 	Mono chrome		2
- * 	Negative		3
- * 	Bluish			4
- * 	Greenish		5
- * 	Reddish			6
- * 	Yellowish		7
  */
+static int ov3640_effects(cam_data *cam)
+{
+	/*
+	 * Value must be in the range of 
+	 * 0 to 7
+	 *
+	 * 	Normal			0
+	 * 	Sepia(antique)		1
+	 * 	Mono chrome		2
+	 * 	Negative		3
+	 * 	Bluish			4
+	 * 	Greenish		5
+	 * 	Reddish			6
+	 * 	Yellowish		7
+	 */
 	printk(KERN_DEBUG "ov3640_effects %d\n",cam->ctrl.value);
 
-	switch(cam->ctrl.value)
-	{
-		case 0:
-		{
-			ov3640_write_reg(0x3302, 0xef);
-			ov3640_write_reg(0x3355, 0x00);
-		}break;
+	switch (cam->ctrl.value) {
+	case 0:
+		ov3640_write_reg(0x3302, 0xef);
+		ov3640_write_reg(0x3355, 0x00);
+		break;
 
-		case 1:
-		{
-			ov3640_write_reg(0x3302, 0xef);
-			ov3640_write_reg(0x3355, 0x18);
-			ov3640_write_reg(0x335a, 0x40);
-			ov3640_write_reg(0x335b, 0xa6);
+	case 1:
+		ov3640_write_reg(0x3302, 0xef);
+		ov3640_write_reg(0x3355, 0x18);
+		ov3640_write_reg(0x335a, 0x40);
+		ov3640_write_reg(0x335b, 0xa6);
+		break;
 
-		}break;
+	case 2:
+		ov3640_write_reg(0x3302, 0xef);
+		ov3640_write_reg(0x3355, 0x18);	// bit[4]fix u enable, bit[3]fix v enable
+		ov3640_write_reg(0x335a, 0x80);
+		ov3640_write_reg(0x335b, 0x80);
+		break;
 
-		case 2:
-		{
-			ov3640_write_reg(0x3302, 0xef);
-			ov3640_write_reg(0x3355, 0x18);	// bit[4]fix u enable, bit[3]fix v enable
-			ov3640_write_reg(0x335a, 0x80);
-			ov3640_write_reg(0x335b, 0x80);
+	case 3:
+		ov3640_write_reg(0x3302, 0xef);
+		ov3640_write_reg(0x3355, 0x40);	// bit[6] negative
+		break;
 
-		}break;
+	case 4:
+		ov3640_write_reg(0x3302, 0xef);
+		ov3640_write_reg(0x3355, 0x18);
+		ov3640_write_reg(0x335a, 0xa0);
+		ov3640_write_reg(0x335b, 0x40);
+		break;
 
-		case 3:
-		{
-			ov3640_write_reg(0x3302, 0xef);
-			ov3640_write_reg(0x3355, 0x40);	// bit[6] negative
-		}break;
+	case 5:
+		ov3640_write_reg(0x3302, 0xef);
+		ov3640_write_reg(0x3355, 0x18);
+		ov3640_write_reg(0x335a, 0x60);
+		ov3640_write_reg(0x335b, 0x60);
+		break;
 
-		case 4:
-		{
-			ov3640_write_reg(0x3302, 0xef);
-			ov3640_write_reg(0x3355, 0x18);
-			ov3640_write_reg(0x335a, 0xa0);
-			ov3640_write_reg(0x335b, 0x40);
-		}break;
+	case 6:
+		ov3640_write_reg(0x3302, 0xef);
+		ov3640_write_reg(0x3355, 0x18);
+		ov3640_write_reg(0x335a, 0x80);
+		ov3640_write_reg(0x335b, 0xc0);
+		break;
 
-		case 5:
-		{
-			ov3640_write_reg(0x3302, 0xef);
-			ov3640_write_reg(0x3355, 0x18);
-			ov3640_write_reg(0x335a, 0x60);
-			ov3640_write_reg(0x335b, 0x60);
-
-		}break;
-
-		case 6:
-		{
-			ov3640_write_reg(0x3302, 0xef);
-			ov3640_write_reg(0x3355, 0x18);
-			ov3640_write_reg(0x335a, 0x80);
-			ov3640_write_reg(0x335b, 0xc0);
-
-		}break;
-
-		case 7:
-		{
-			ov3640_write_reg(0x3302, 0xef);
-			ov3640_write_reg(0x3355, 0x18);
-			ov3640_write_reg(0x335a, 0x30);
-			ov3640_write_reg(0x335b, 0x90);
-
-		}break;
+	case 7:
+		ov3640_write_reg(0x3302, 0xef);
+		ov3640_write_reg(0x3355, 0x18);
+		ov3640_write_reg(0x335a, 0x30);
+		ov3640_write_reg(0x335b, 0x90);
+		break;
 	}
-	return SUCCESS;
+
+	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_08
- *  Name	:	ov3640_saturation
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
+/*
  *  Description	: 	Image output saturation from the sensor be increased or decreased.
  *  Comments	:  	
- ************************************************************************************************************/
-
-int ov3640_saturation(cam_data *cam)
+ */
+static int ov3640_saturation(cam_data *cam)
 {
+	unsigned char val;
+
 	printk(KERN_DEBUG "ov3640_saturation %d\n",cam->ctrl.value);
 
-/*
- * Value must be in the range of 
- * 0x10 0x20 0x70
- *  -48   0   +48
- */
-	switch(cam->cam_sensor.cmd_to_sensor)
-	{
-		case GET_DATA_FRM_SENSOR:
-		{
-			unsigned char reg_value;
-			ov3640_read_reg(0x3358,&reg_value);
-			cam->ctrl.value	= reg_value - 0x30;
-			cam->ctrl.value	= (cam->ctrl.value)>48?48:		\
-						(cam->ctrl.value)<-48?-48:	\
-						(cam->ctrl.value);
-		}break;
+	/*
+	 * Value must be in the range of 
+	 * 0x10 0x20 0x70
+	 *  -48   0   +48
+	 */
+	switch (cam->cam_sensor.cmd_to_sensor) {
+	case GET_DATA_FRM_SENSOR:
+		ov3640_read_reg(0x3358, &val);
+		cam->ctrl.value	= val - 0x30;
 
-		case SET_DATA_TO_SENSOR:
-		{
-			if((cam->ctrl.value >= -48) && (cam->ctrl.value <= 48))
-			{
-				ov3640_write_reg(0x3302, 0xef);
-				ov3640_write_reg(0x3355, 0x02);
-				ov3640_write_reg(0x3358, 0x30 + (cam->ctrl.value));
-				ov3640_write_reg(0x3359, 0x30 + (cam->ctrl.value));
-			}
-		}break;
+		if (cam->ctrl.value > 48)
+			cam->ctrl.value = 48;
+		else if (cam->ctrl.value < -48)
+			cam->ctrl.value = -48;
+		
+		break;
 
-		case QUERY_DATA_FRM_SENSOR:
-		{
-			cam->cam_sensor.qctrl.id	= V4L2_CID_SATURATION;
-			cam->cam_sensor.qctrl.type	= V4L2_CTRL_TYPE_INTEGER;
-			strncpy(cam->cam_sensor.qctrl.name,"saturation",strlen("saturation"));
-			cam->cam_sensor.qctrl.minimum = -48;
-			cam->cam_sensor.qctrl.maximum = 48;
-			cam->cam_sensor.qctrl.step = 1;
-			cam->cam_sensor.qctrl.default_value = 0;
-			cam->cam_sensor.qctrl.flags = V4L2_CTRL_FLAG_SLIDER;
-
-		}break;
-
-		default:
-		{
-			TRACE_ERR_AND_RET(-EINVAL);	
+	case SET_DATA_TO_SENSOR:
+		if (cam->ctrl.value >= -48 && cam->ctrl.value <= 48) {
+			ov3640_write_reg(0x3302, 0xef);
+			ov3640_write_reg(0x3355, 0x02);
+			ov3640_write_reg(0x3358, 0x30 + cam->ctrl.value);
+			ov3640_write_reg(0x3359, 0x30 + cam->ctrl.value);
 		}
+		else {
+			return -EINVAL;
+		}
+		
+		break;
+
+	case QUERY_DATA_FRM_SENSOR:
+		cam->cam_sensor.qctrl.id = V4L2_CID_SATURATION;
+		cam->cam_sensor.qctrl.type = V4L2_CTRL_TYPE_INTEGER;
+		strncpy(cam->cam_sensor.qctrl.name, "saturation", 
+			strlen("saturation"));
+		cam->cam_sensor.qctrl.minimum = -48;
+		cam->cam_sensor.qctrl.maximum = 48;
+		cam->cam_sensor.qctrl.step = 1;
+		cam->cam_sensor.qctrl.default_value = 0;
+		cam->cam_sensor.qctrl.flags = V4L2_CTRL_FLAG_SLIDER;
+		break;
+
+	default:
+		return -EINVAL;
 	}
-	return SUCCESS;
+
+	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_09
- *  Name	:	ov3640_contrast
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
+/*
  *  Description	: 	Image output contrast from the sensor be increased or decreased.
- *  Comments	:  	
- ************************************************************************************************************/
-
-int ov3640_contrast(cam_data *cam)
+ */
+static int ov3640_contrast(cam_data *cam)
 {
+	unsigned char val;
+
 	printk(KERN_DEBUG "ov3640_contrast %d\n",cam->ctrl.value);
 
-/*
- * Value must be in the range of 
- * 0x14 0x20 0x2c
- * -12   0   12
- */
-	switch(cam->cam_sensor.cmd_to_sensor)
-	{
-		case GET_DATA_FRM_SENSOR:
-		{
-			unsigned char reg_value;
-			ov3640_read_reg(0x335c,&reg_value);
-			cam->ctrl.value	= reg_value - 0x20;
-			cam->ctrl.value	= (cam->ctrl.value)>12?12:		\
-						(cam->ctrl.value)<-12?-12:	\
-						(cam->ctrl.value);
-		}break;
+	/*
+	 * Value must be in the range of 
+	 * 0x14 0x20 0x2c
+	 * -12   0   12
+	 */
 
-		case SET_DATA_TO_SENSOR:
-		{
-			if((cam->ctrl.value >= -12) && (cam->ctrl.value <= 12))
-			{
-				ov3640_write_reg(0x3302, 0xef);
-				ov3640_write_reg(0x3355, 0x04);
-				ov3640_write_reg(0x3354, 0x01);
-				ov3640_write_reg(0x335c, 0x20 + (cam->ctrl.value));
-				ov3640_write_reg(0x335d, 0x20 + (cam->ctrl.value));
-			}
-		}break;
-
-		case QUERY_DATA_FRM_SENSOR:
-		{
-			cam->cam_sensor.qctrl.id	= V4L2_CID_CONTRAST;
-			cam->cam_sensor.qctrl.type	= V4L2_CTRL_TYPE_INTEGER;
-			strncpy(cam->cam_sensor.qctrl.name,"contrast",strlen("contrast"));
-			cam->cam_sensor.qctrl.minimum = -12;
-			cam->cam_sensor.qctrl.maximum = 12;
-			cam->cam_sensor.qctrl.step = 1;
-			cam->cam_sensor.qctrl.default_value = 0;
-			cam->cam_sensor.qctrl.flags = V4L2_CTRL_FLAG_SLIDER;
-
-		}break;
-
-		default:
-		{
-			TRACE_ERR_AND_RET(-EINVAL);	
-		}
-	}
-	return SUCCESS;
-}
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_10
- *  Name	:	planckian_locus_lookuptable
- *  Parameter1	:	int value	- Temperature of the source.
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	:	Adjust the whilebalance of the sensor based on envionment source temperature		
- *  Comments	:  	
- ************************************************************************************************************/
-
-int planckian_locus_lookuptable(int value)
-{
-	typedef struct _aw_temp_gain_adj
-	{
-		unsigned int temp;
-		unsigned char r;
-		unsigned char g;
-		unsigned char b;
-	}aw_gain_adj;
-
-	aw_gain_adj temp_aw_gain[]	=	{				\
-							{3000,0x44,0x40,0x70},	\
-							{4000,0x52,0x40,0x48},	\
-							{5000,0x68,0x40,0x4e},	\
-							{5500,0x5e,0x40,0x46}	\
-						}; 
-
-	unsigned int i	= DISABLE;
+	switch (cam->cam_sensor.cmd_to_sensor) {
+	case GET_DATA_FRM_SENSOR:
+		ov3640_read_reg(0x335c, &val);
+		cam->ctrl.value	= val - 0x20;
+		
+		if (cam->ctrl.value > 12)
+			cam->ctrl.value = 12;
+		else if (cam->ctrl.value < -12)
+			cam->ctrl.value = -12;
 	
-	for(i	= DISABLE; i < (sizeof(temp_aw_gain)/sizeof(temp_aw_gain[0]));i++)
-	{
-		if(temp_aw_gain[i].temp >= value)
-		{
-			break;
-		}
-	}
-	ov3640_write_reg(0x33a7,temp_aw_gain[i].r);
-	ov3640_write_reg(0x33a8,temp_aw_gain[i].g);
-	ov3640_write_reg(0x33a9,temp_aw_gain[i].b);
+		break;
 
-	return SUCCESS;
+	case SET_DATA_TO_SENSOR:
+		if (cam->ctrl.value >= -12 && cam->ctrl.value <= 12) {
+			ov3640_write_reg(0x3302, 0xef);
+			ov3640_write_reg(0x3355, 0x04);
+			ov3640_write_reg(0x3354, 0x01);
+			ov3640_write_reg(0x335c, 0x20 + cam->ctrl.value);
+			ov3640_write_reg(0x335d, 0x20 + cam->ctrl.value);
+		}
+		else {
+			return -EINVAL;
+		}
+
+		break;
+
+	case QUERY_DATA_FRM_SENSOR:
+		cam->cam_sensor.qctrl.id = V4L2_CID_CONTRAST;
+		cam->cam_sensor.qctrl.type = V4L2_CTRL_TYPE_INTEGER;
+		strncpy(cam->cam_sensor.qctrl.name, "contrast", 
+			strlen("contrast"));
+		cam->cam_sensor.qctrl.minimum = -12;
+		cam->cam_sensor.qctrl.maximum = 12;
+		cam->cam_sensor.qctrl.step = 1;
+		cam->cam_sensor.qctrl.default_value = 0;
+		cam->cam_sensor.qctrl.flags = V4L2_CTRL_FLAG_SLIDER;
+		break;
+
+	default:
+		return -EINVAL;	
+	}
+
+	return 0;
 }
 
-/************************************************************************************************************
- *  
- *  MODULE TYPE	:	FUNCTION				MODULE ID	: SENS_OV3640_11	
- *  Name	:	ov3640_white_balance
- *  Parameter1	:	cam_data *cam	- Base address of camera structure pointer
- *  Returns	:	int		- On Success Zero (or) positive value be returned to the calling
- *  					  Functions and On error a negative value be returned
- *
- *  					  Note: 
- *  					  	For more detail about the return values please refer
- *  					  error.c and error.h file available in the current project
- *
- *  Description	: 	Image Whitebalance settings from the sensor
- *  Comments	:  	Auto White balance, Daylight,Tungsten,Fluorescent and cloudy settings are 
- *  			available 
- ************************************************************************************************************/
-int ov3640_white_balance(cam_data *cam)
+/*
+ *  Description	: Adjust the white balance of the sensor based on environment 
+		  source temperature		
+ */
+#define TEMP 0
+#define RED 1
+#define GREEN 2
+#define BLUE 3
+static int planckian_locus_lookuptable(int value)
 {
-	int ret_val;
+	unsigned int i;
+	unsigned gain_adjust[4][4] = {
+		{ 3000, 0x44, 0x40, 0x70 },
+		{ 4000, 0x52, 0x40, 0x48 },
+		{ 5000, 0x68, 0x40, 0x4e },
+		{ 5500, 0x5e, 0x40, 0x46 }
+	}; 
+	
+	for (i = 0; i < 4 ;i++) {
+		if (gain_adjust[i][TEMP] >= value)
+			break;
+	}
+
+	if (i == 4)
+		return -1;
+
+	ov3640_write_reg(0x33a7, gain_adjust[i][RED]);
+	ov3640_write_reg(0x33a8, gain_adjust[i][GREEN]);
+	ov3640_write_reg(0x33a9, gain_adjust[i][BLUE]);
+
+	return 0;
+}
+
+/*
+ *  Description	: Image Whitebalance settings from the sensor
+ *  Comments	: Auto White balance, Daylight, Tungsten, Fluorescent and 
+ *		  Cloudy settings are available 
+ */
+static int ov3640_white_balance(cam_data *cam)
+{
+	// FIXME - believe this function is broken
 	printk(KERN_DEBUG "ov3640_white_balance %d\n",cam->ctrl.value);
 
-	switch(cam->cam_sensor.cmd_to_sensor)
-	{
-		case GET_DATA_FRM_SENSOR:
-		{
-		}break;
+	switch (cam->cam_sensor.cmd_to_sensor) {
+	case GET_DATA_FRM_SENSOR:
+		break;
 
-		case SET_DATA_TO_SENSOR:
-		{
-			switch(cam->ctrl.id)
-			{
-				case V4L2_CID_AUTO_WHITE_BALANCE:
-				{
-					if(!cam->ctrl.value)
-					{
-						ov3640_write_reg(0x332b, 0x08);
-						return SUCCESS;
-					}
-				}
-
-				case V4L2_CID_DO_WHITE_BALANCE:
-				{
-					ov3640_write_reg(0x332b,0x00);
-				}break;
-
-				case V4L2_CID_WHITE_BALANCE_TEMPERATURE:
-				{
-					ov3640_write_reg(0x332b, 0x08);
-					ret_val	= planckian_locus_lookuptable(cam->ctrl.value);
-					if(CHECK_IN_FAIL_LIMIT(ret_val))
-					{
-						TRACE_ERR_AND_RET(FAIL);
-					}
-				}break;
+	case SET_DATA_TO_SENSOR:
+		if (cam->ctrl.id == V4L2_CID_AUTO_WHITE_BALANCE) {
+			if (!cam->ctrl.value) {
+				ov3640_write_reg(0x332b, 0x08);
+				return 0;
 			}
-
-		}break;
-
-		case QUERY_DATA_FRM_SENSOR:
-		{
-		}break;
-
-		default:
-		{
-			TRACE_ERR_AND_RET(-EINVAL);	
 		}
+		else if (cam->ctrl.id == V4L2_CID_DO_WHITE_BALANCE) {
+			ov3640_write_reg(0x332b,0x00);
+		}
+		else if (cam->ctrl.id == V4L2_CID_WHITE_BALANCE_TEMPERATURE) {
+			ov3640_write_reg(0x332b, 0x08);
+
+			if (planckian_locus_lookuptable(cam->ctrl.value) < 0)
+				return -1;
+		}
+
+		break;
+
+	case QUERY_DATA_FRM_SENSOR:
+		break;
+
+	default:
+		return -EINVAL;	
 	}
-	return SUCCESS;
+
+	return 0;
 }
 
 /************************************************************************************************************
